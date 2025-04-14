@@ -1,31 +1,44 @@
 <template>
-  <div class="min-h-screen bg-gray-50 text-black p-6">
-    <TabNavigation :selectedTab="selectedTab" @select-tab="setSelectedTab" />
-    <SearchBar v-model="searchQuery" @search="search" />
-    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <CityCard
+  <v-container
+    fluid
+    class="pa-6"
+    style="background-color: #f9f9f9; min-height: 100vh">
+    <NavigationTabs :selectedTab="selectedTab" @select-tab="setSelectedTab" />
+    <SearchBar v-model="searchQuery" @search="handleSearch" />
+
+    <v-row class="mt-6" dense>
+      <v-col
         v-if="selectedTab === 'cities'"
         v-for="city in results"
         :key="city.id"
-        :city="city"
-        @edit="(c) => console.log('edit', c)"
-        @delete="(id) => console.log('delete', id)"
-      />
-      <AttractionCard
-        v-if="selectedTab === 'attractions'"
-        v-for="attr in results"
-        :key="attr.id"
-        :attraction="attr"
-        @edit="(a) => console.log('edit', a)"
-        @delete="(id) => console.log('delete', id)"
-      />
-    </div>
-  </div>
+        cols="12"
+        sm="6"
+        md="4"
+        lg="3">
+        <CityCard :city="city" @edit="editCity" @delete="confirmDeleteCity" />
+      </v-col>
+    </v-row>
+    <v-row class="mt-6" dense v-if="selectedTab === 'attractions'">
+      <v-col
+        v-for="attraction in results"
+        :key="attraction.id"
+        cols="12"
+        sm="6"
+        md="4"
+        lg="3">
+        <AttractionCard
+          :attraction="attraction"
+          @edit="editAttraction"
+          @delete="confirmDeleteAttraction"
+          @show-images="showAttractionImages" />
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script setup>
 import { ref } from "vue";
-import TabNavigation from "./TabNavigation.vue";
+import NavigationTabs from "./NavigationTabs.vue";
 import SearchBar from "./SearchBar.vue";
 import CityCard from "./CityCard.vue";
 import AttractionCard from "./AttractionCard.vue";
@@ -46,11 +59,15 @@ const apiPaths = {
   attractions: "http://localhost:8080/attractions",
 };
 
-const search = async () => {
+const handleSearch = async (done) => {
   try {
     const base = apiPaths[selectedTab.value];
     const query = searchQuery.value?.trim();
-    if (!query) return;
+    if (!query) {
+      done();
+      return;
+    }
+
     const url = `${base}/${encodeURIComponent(query)}`;
     const response = await axios.get(url);
 
@@ -63,7 +80,7 @@ const search = async () => {
             );
             const relativeUrl = photoRes.data[0]?.url || "";
             attr.photoUrl = relativeUrl
-              ? `http://localhost:8080/${relativeUrl}`
+              ? `http://localhost:8080${relativeUrl}`
               : "";
           } catch {
             attr.photoUrl = "";
@@ -77,6 +94,8 @@ const search = async () => {
     }
   } catch (error) {
     console.error("Error fetching data:", error);
+  } finally {
+    done();
   }
 };
 </script>
