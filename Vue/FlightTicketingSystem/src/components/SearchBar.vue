@@ -8,14 +8,16 @@
         placeholder="請輸入關鍵字"
         class="search-input"
         @keyup.enter="emitSearch"
-        :disabled="loading" />
+        :disabled="loading"
+      />
       <button class="search-btn" @click="emitSearch" :disabled="loading">
         <template v-if="loading">
           <v-progress-circular
             indeterminate
             size="20"
             width="2"
-            color="white" />
+            color="white"
+          />
         </template>
         <template v-else> Search </template>
       </button>
@@ -38,6 +40,15 @@ const loading = ref(false);
 watch(localQuery, (val) => {
   emit("update:modelValue", val);
 });
+
+watch(
+  () => props.modelValue,
+  (val) => {
+    if (val !== localQuery.value) {
+      localQuery.value = val;
+    }
+  }
+);
 
 const emitSearch = async () => {
   if (!localQuery.value.trim()) return;

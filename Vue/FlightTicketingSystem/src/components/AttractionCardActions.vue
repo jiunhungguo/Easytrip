@@ -3,15 +3,17 @@
     <v-btn
       color="primary"
       size="small"
-      variant="tonal"
-      @click="$emit('edit', attraction)">
+      variant="outlined"
+      @click="$emit('edit', attraction)"
+    >
       編輯
     </v-btn>
     <v-btn
       color="error"
       size="small"
-      variant="tonal"
-      @click="$emit('delete', attraction.id, attraction.name)">
+      variant="outlined"
+      @click="$emit('delete', attraction.id, attraction.name)"
+    >
       刪除
     </v-btn>
   </v-card-actions>
@@ -21,5 +23,5 @@
 defineProps({
   attraction: Object,
 });
-defineEmits(["edit", "delete", "show-images"]);
+defineEmits(["edit", "delete"]);
 </script>
