@@ -1,15 +1,14 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/stores/auth"; // 引入 Pinia store
 
-
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: "/",
       // component: () => import("@/layouts/mainlayout.vue"),
-       component: () => import("@/layouts/memberLayout.vue"),
-       children: [
+      component: () => import("@/layouts/memberLayout.vue"),
+      children: [
         {
           path: "",
           component: () => import("@/page/member/test1.vue"),
@@ -26,11 +25,25 @@ const router = createRouter({
           path: "seatSelection",
           component: () => import("@/page/member/seatSelection.vue"),
         },
-
-      ] 
+      ],
 
       // component: () => import("@/layouts/userView.vue"),
     },
+    {
+      path: "/travel",
+      component: () => import("@/layouts/userView.vue"),
+    },
+    {
+      path: "/usertest",
+      component: () => import("@/layouts/userTestView.vue"),
+      children: [
+        {
+          path: "attraction",
+          component: () => import("@/page/admin/AdminAttractions.vue"),
+        },
+      ],
+    },
+
     {
       path: "/admin",
       component: () => import("@/layouts/adminView.vue"),
@@ -73,7 +86,7 @@ const router = createRouter({
         },
         {
           path: "travel",
-          component: () => import("@/components/TravelPage.vue"),
+          component: () => import("@/page/admin/TravelPage.vue"),
         },
       ],
     },

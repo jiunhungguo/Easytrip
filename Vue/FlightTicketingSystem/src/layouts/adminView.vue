@@ -148,11 +148,11 @@ const items = ref([
     link: true,
     path: "/admin/products",
   },
-  {
-    title: "商品管理",
-    prependIcon: "mdi mdi-gift-outline",
-    link: true,
-    path: "/admin/testtt",
-  },
+  // {
+  //   title: "商品管理",
+  //   prependIcon: "mdi mdi-gift-outline",
+  //   link: true,
+  //   path: "/admin/testtt",
+  // },
 ]);
 </script>

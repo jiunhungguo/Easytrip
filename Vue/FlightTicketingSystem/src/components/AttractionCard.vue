@@ -3,17 +3,16 @@
     class="mx-auto hover:shadow-xl hover:scale-[1.02]"
     max-width="320"
     elevation="3"
-    rounded="xl"
-  >
+    rounded="xl">
     <!-- 圖片 -->
     <v-carousel
       v-if="photos.length > 0"
       height="180"
       hide-delimiter-background
+      delimiter-icon="mdi-circle"
       show-arrows="hover"
       cycle
-      class="rounded-t-xl"
-    >
+      class="rounded-t-xl">
       <v-carousel-item v-for="(photo, i) in photos" :key="i">
         <v-img :src="photo.url" height="180" cover />
       </v-carousel-item>
@@ -33,8 +32,7 @@
         dense
         readonly
         half-increments
-        size="18"
-      />
+        size="18" />
       <div class="text-caption text-grey mt-1">
         {{ attraction.category?.join(", ") }}
       </div>
@@ -44,8 +42,7 @@
     <AttractionCardActions
       :attraction="attraction"
       @edit="editDialog = true"
-      @delete="deleteDialog = true"
-    />
+      @delete="deleteDialog = true" />
 
     <!-- 🗑 刪除 Dialog -->
     <v-dialog v-model="deleteDialog" max-width="400">
@@ -80,46 +77,39 @@
               :items="cities.map((city) => city.name)"
               item-title="name"
               item-value="id"
-              label="城市"
-            />
+              label="城市" />
             <v-text-field v-model="form.address" label="地址" :rules="[r]" />
             <v-text-field
               v-model.number="form.rating"
               label="評分 (0-5)"
               type="number"
-              :rules="[r, ratingRule]"
-            />
+              :rules="[r, ratingRule]" />
             <v-textarea
               v-model="form.description"
               label="描述"
               :rules="[r]"
-              rows="3"
-            />
+              rows="3" />
             <v-text-field
               v-model.number="form.latitude"
               label="緯度"
               type="number"
-              :rules="[r]"
-            />
+              :rules="[r]" />
             <v-text-field
               v-model.number="form.longitude"
               label="經度"
               type="number"
-              :rules="[r]"
-            />
+              :rules="[r]" />
             <v-text-field
               v-model="categoryInput"
               label="分類 (用逗號分隔)"
-              :rules="[r]"
-            />
+              :rules="[r]" />
             <v-file-input
               v-model="form.imageFile"
               label="上傳新圖片（可選）"
               accept="image/*"
               prepend-icon=""
               prepend-inner-icon="mdi-camera"
-              clearable
-            />
+              clearable />
           </v-form>
         </v-card-text>
         <v-card-actions>
@@ -195,6 +185,8 @@ const submitEdit = async () => {
     const selectedCity = props.cities.find(
       (city) => city.name === form.cityName
     );
+
+    // 更新 attraction 本體
     await axios.put(
       `http://localhost:8080/attractions/${props.attraction.id}`,
       {
@@ -212,12 +204,13 @@ const submitEdit = async () => {
       }
     );
 
+    // 圖片上傳（可選）
     if (form.imageFile) {
       const imageData = new FormData();
-      imageData.append("file", form.imageFile);
+      imageData.append("image", form.imageFile);
 
       const uploadRes = await axios.post(
-        "http://localhost:8080/uploads/images",
+        "http://localhost:8080/photos/upload",
         imageData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
@@ -230,6 +223,15 @@ const submitEdit = async () => {
         caption: form.name,
       });
     }
+
+    // ✅ 再次取得圖片資料，更新畫面
+    const res = await axios.get(
+      `http://localhost:8080/photos/attraction/${props.attraction.id}`
+    );
+    photos.value = res.data.map((p) => ({
+      ...p,
+      url: p.url.startsWith("http") ? p.url : `http://localhost:8080${p.url}`,
+    }));
 
     emit("edit");
     editDialog.value = false;

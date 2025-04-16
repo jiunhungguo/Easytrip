@@ -105,6 +105,7 @@
           Search
         </button>
       </div>
+      <router-view />
     </main>
   </div>
 </template>

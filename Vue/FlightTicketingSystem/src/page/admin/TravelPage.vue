@@ -2,70 +2,106 @@
   <v-container
     fluid
     class="pa-6"
-    style="background-color: #f9f9f9; min-height: 100vh"
-  >
+    style="background-color: #f9f9f9; min-height: 100vh">
+    <!-- Tabs -->
     <NavigationTabs :selectedTab="selectedTab" @select-tab="setSelectedTab" />
+
+    <!-- Search Bar -->
     <SearchBar v-model="searchQuery" @search="handleSearch" />
 
-    <v-row class="mt-6" dense v-if="selectedTab === 'cities' && results.length">
-      <v-col
-        v-if="selectedTab === 'cities'"
-        v-for="city in results"
-        :key="city.id"
-        cols="12"
-        sm="6"
-        md="4"
-        lg="3"
-      >
-        <CityCard
-          :city="city"
+    <!-- Tab Content -->
+    <v-window v-model="selectedTab" class="mt-6">
+      <!-- Search City -->
+      <v-window-item value="cities">
+        <CityCardGrid
+          :cities="results"
           @edit="handleCityUpdated"
-          @delete="handleCityDeleted"
-        />
-      </v-col>
-    </v-row>
-    <v-row class="mt-6" dense v-if="selectedTab === 'attractions'">
-      <v-col
-        v-for="attraction in results"
-        :key="attraction.id"
-        cols="12"
-        sm="6"
-        md="4"
-        lg="3"
-      >
-        <AttractionCard
-          :attraction="attraction"
+          @delete="handleCityDeleted" />
+      </v-window-item>
+      <!-- All Cities -->
+      <v-window-item value="allCities">
+        <CityCardGrid
+          :cities="results"
+          @edit="handleCityUpdated"
+          @delete="handleCityDeleted" />
+      </v-window-item>
+      <!-- Search Attraction -->
+      <v-window-item value="attractions">
+        <AttractionCardGrid
+          :attractions="results"
           :cities="cities"
           @edit="handleAttractionUpdated"
-          @delete="handleAttractionDeleted"
-        />
-      </v-col>
-    </v-row>
+          @delete="handleAttractionDeleted" />
+      </v-window-item>
+      <!-- All Attractions -->
+      <v-window-item value="allAttractions">
+        <AttractionCardGrid
+          :attractions="results"
+          :cities="cities"
+          @edit="handleAttractionUpdated"
+          @delete="handleAttractionDeleted" />
+      </v-window-item>
+    </v-window>
 
+    <!-- Snackbar -->
     <v-snackbar
       v-model="snackbar"
       color="success"
       timeout="3000"
-      location="bottom center"
-    >
+      location="bottom center">
       {{ snackbarMessage }}
     </v-snackbar>
   </v-container>
+  <CreateCityModal ref="createCityModal" @created="handleCityCreated" />
+  <CreateAttractionModal
+    ref="createAttractionModal"
+    :cities="cities"
+    @created="handleAttractionCreated" />
 </template>
 
+<style scoped>
+.city-card-container {
+  width: 260px;
+  min-height: 320px;
+}
+</style>
+
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, watch, onMounted } from "vue";
 import axios from "axios";
-import NavigationTabs from "./NavigationTabs.vue";
-import SearchBar from "./SearchBar.vue";
-import CityCard from "./CityCard.vue";
-import AttractionCard from "./AttractionCard.vue";
+import NavigationTabs from "@/components/NavigationTabs.vue";
+import SearchBar from "@/components/SearchBar.vue";
+import CityCardGrid from "@/components/CityCardGrid.vue";
+import AttractionCardGrid from "@/components/AttractionCardGrid.vue";
+import CreateCityModal from "@/components/CreateCityModal.vue";
+import CreateAttractionModal from "@/components/CreateAttractionModal.vue";
 
 const selectedTab = ref("cities");
 
+const createCityModal = ref(null); // 取得 modal 的 ref
+const createAttractionModal = ref(null); // 取得 modal 的 ref
+
 const setSelectedTab = (tab) => {
   selectedTab.value = tab;
-  results.value = [];
+
+  if (tab === "addCities" && createCityModal.value) {
+    createCityModal.value.dialog = true;
+    // selectedTab.value = "cities";
+    return;
+  }
+  if (tab === "addAttractions" && createAttractionModal.value) {
+    createAttractionModal.value.dialog = true;
+    // selectedTab.value = "attractions";
+    return;
+  }
+  if (tab === "allCities") {
+    reloadCities();
+  } else if (tab === "allAttractions") {
+    reloadAttractions();
+  } else {
+    results.value = [];
+    searchQuery.value = "";
+  }
 };
 
 const searchQuery = ref("");
@@ -129,7 +165,6 @@ const getCityList = async () => {
   try {
     const res = await axios.get("http://localhost:8080/cities");
     cities.value = res.data.content;
-    console.log(cities.value);
   } catch (err) {
     console.error("載入城市列表失敗", err);
   }
@@ -138,15 +173,17 @@ const getCityList = async () => {
 const reloadCities = async () => {
   searchQuery.value = "";
   const res = await axios.get("http://localhost:8080/cities");
-  results.value = res.data;
+  results.value = res.data.content;
   getCityList();
 };
 
 const reloadAttractions = async () => {
   searchQuery.value = "";
   const res = await axios.get("http://localhost:8080/attractions");
+  const attractionsRaw = res.data.content || [];
+
   const attractions = await Promise.all(
-    res.data.map(async (attr) => {
+    attractionsRaw.map(async (attr) => {
       try {
         const photoRes = await axios.get(
           `http://localhost:8080/photos/attraction/${attr.id}`
@@ -164,6 +201,11 @@ const reloadAttractions = async () => {
   results.value = attractions;
 };
 
+const fetchCities = async () => {
+  const response = await axios.get("/cities");
+  results.value = response.data.content;
+};
+
 const handleCityUpdated = () => {
   showSuccess("城市編輯成功！");
   reloadCities();
@@ -174,6 +216,11 @@ const handleCityDeleted = () => {
   reloadCities();
 };
 
+const handleCityCreated = () => {
+  showSuccess("城市添加成功！");
+  reloadCities();
+};
+
 const handleAttractionUpdated = () => {
   showSuccess("景點編輯成功！");
   reloadAttractions();
@@ -181,6 +228,11 @@ const handleAttractionUpdated = () => {
 
 const handleAttractionDeleted = () => {
   showSuccess("景點刪除成功！");
+  reloadAttractions();
+};
+
+const handleAttractionCreated = () => {
+  showSuccess("景點增添成功！");
   reloadAttractions();
 };
 

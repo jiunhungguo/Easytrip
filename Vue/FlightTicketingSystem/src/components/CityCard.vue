@@ -3,15 +3,13 @@
     class="mx-auto transition-all duration-300 hover:shadow-xl hover:scale-[1.02]"
     max-width="320"
     elevation="3"
-    rounded="xl"
-  >
+    rounded="xl">
     <v-img
       :src="`http://localhost:8080${city.image}`"
       :alt="city.name"
       height="180"
       cover
-      class="rounded-t-xl"
-    />
+      class="rounded-t-xl" />
     <v-card-title class="text-center text-lg font-semibold py-2">
       {{ city.name }}
     </v-card-title>
@@ -69,16 +67,21 @@
               label="上傳新圖片"
               accept="image/*"
               prepend-icon=""
-              prepend-inner-icon="mdi-camera"
-            />
+              prepend-inner-icon="mdi-camera" />
           </v-form>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn color="primary" @click="submitEdit" :loading="loading">
-            更新
+          <v-btn
+            color="primary"
+            variant="outlined"
+            @click="submitEdit"
+            :loading="loading">
+            確認
           </v-btn>
-          <v-btn text @click="editDialog = false">取消</v-btn>
+          <v-btn variant="outlined" text @click="editDialog = false"
+            >取消</v-btn
+          >
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -116,9 +119,9 @@ const submitEdit = async () => {
 
   try {
     if (form.imageFile) {
-      const fd = new FormData();
-      fd.append("image", form.imageFile);
-      const res = await axios.post("http://localhost:8080/photos/upload", fd);
+      const file = new FormData();
+      file.append("image", form.imageFile);
+      const res = await axios.post("http://localhost:8080/photos/upload", file);
       imageUrl = res.data.url;
     }
 
@@ -131,7 +134,7 @@ const submitEdit = async () => {
     });
 
     editDialog.value = false;
-    emit("edit"); // 通知父層刷新
+    emit("edit");
   } catch (err) {
     console.error("更新失敗", err);
   } finally {

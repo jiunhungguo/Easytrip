@@ -1,9 +1,5 @@
 <template>
   <v-dialog v-model="dialog" max-width="600">
-    <template #activator="{ props }">
-      <v-btn color="primary" v-bind="props">編輯城市</v-btn>
-    </template>
-
     <v-card>
       <v-card-title class="text-h6 font-weight-bold">編輯城市</v-card-title>
 
@@ -13,42 +9,38 @@
             v-model="form.name"
             label="城市名稱"
             :error-messages="errors.name"
-            required
-          />
+            required />
           <v-text-field
             v-model="form.country"
             label="國家"
             :error-messages="errors.country"
-            required
-          />
+            required />
           <v-text-field
             v-model="form.latitude"
             label="經度"
             type="number"
             :error-messages="errors.latitude"
-            required
-          />
+            required />
           <v-text-field
             v-model="form.longitude"
             label="緯度"
             type="number"
             :error-messages="errors.longitude"
-            required
-          />
+            required />
 
           <v-file-input
             v-model="form.photo"
             label="上傳照片（可選）"
             accept="image/*"
-            prepend-icon="mdi-camera"
-            show-size
-          />
+            prepend-icon=""
+            prepend-inner-icon="mdi-camera"
+            show-size />
         </v-form>
       </v-card-text>
 
       <v-card-actions class="justify-end">
-        <v-btn text @click="dialog = false">取消</v-btn>
-        <v-btn color="primary" @click="submit">儲存</v-btn>
+        <v-btn color="primary" variant="outlined" @click="submit">確認</v-btn>
+        <v-btn text variant="outlined" @click="dialog = false">取消</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
