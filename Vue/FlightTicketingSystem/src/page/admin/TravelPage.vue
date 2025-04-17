@@ -2,7 +2,8 @@
   <v-container
     fluid
     class="pa-6"
-    style="background-color: #f9f9f9; min-height: 100vh">
+    style="background-color: #f9f9f9; min-height: 100vh"
+  >
     <!-- Tabs -->
     <NavigationTabs :selectedTab="selectedTab" @select-tab="setSelectedTab" />
 
@@ -16,14 +17,16 @@
         <CityCardGrid
           :cities="results"
           @edit="handleCityUpdated"
-          @delete="handleCityDeleted" />
+          @delete="handleCityDeleted"
+        />
       </v-window-item>
       <!-- All Cities -->
       <v-window-item value="allCities">
         <CityCardGrid
           :cities="results"
           @edit="handleCityUpdated"
-          @delete="handleCityDeleted" />
+          @delete="handleCityDeleted"
+        />
       </v-window-item>
       <!-- Search Attraction -->
       <v-window-item value="attractions">
@@ -31,7 +34,8 @@
           :attractions="results"
           :cities="cities"
           @edit="handleAttractionUpdated"
-          @delete="handleAttractionDeleted" />
+          @delete="handleAttractionDeleted"
+        />
       </v-window-item>
       <!-- All Attractions -->
       <v-window-item value="allAttractions">
@@ -39,7 +43,8 @@
           :attractions="results"
           :cities="cities"
           @edit="handleAttractionUpdated"
-          @delete="handleAttractionDeleted" />
+          @delete="handleAttractionDeleted"
+        />
       </v-window-item>
     </v-window>
 
@@ -48,7 +53,8 @@
       v-model="snackbar"
       color="success"
       timeout="3000"
-      location="bottom center">
+      location="bottom center"
+    >
       {{ snackbarMessage }}
     </v-snackbar>
   </v-container>
@@ -56,7 +62,8 @@
   <CreateAttractionModal
     ref="createAttractionModal"
     :cities="cities"
-    @created="handleAttractionCreated" />
+    @created="handleAttractionCreated"
+  />
 </template>
 
 <style scoped>

@@ -6,7 +6,8 @@
       expand-on-hover
       rail
       @mouseenter="isHovered = true"
-      @mouseleave="isHovered = false">
+      @mouseleave="isHovered = false"
+    >
       <v-list density="compact" item-props :items="items" nav>
         <v-list-item v-for="item in items" @click="$router.push(item.path)">
           <v-icon :icon="item.prependIcon"></v-icon>
@@ -21,21 +22,23 @@
           nav
           prepend-icon="mdi-logout"
           title="登出"
-          @click="logoutChange()" />
+          @click="logoutChange()"
+        />
       </template>
     </v-navigation-drawer>
 
     <v-app-bar border="b" class="ps-4" flat>
       <v-app-bar-nav-icon
         v-if="$vuetify.display.smAndDown"
-        @click="drawer = !drawer" />
+        @click="drawer = !drawer"
+      />
 
       <v-app-bar-title class="ms-auto"
         ><img
           src="@/assets/Easytrip_text.png"
           alt="My Icon"
-          width="13%"
-          height="13%"
+          width="12%"
+          height="12%"
       /></v-app-bar-title>
       <h5 style="margin-left: auto">
         用戶名: {{ authStore.user ? authStore.user.username : "未登入" }}
@@ -50,13 +53,15 @@
               <v-list-item
                 append-icon="mdi-cog-outline"
                 link
-                title="Settings" />
+                title="Settings"
+              />
 
               <v-list-item
                 append-icon="mdi-logout"
                 link
                 title="登出"
-                @click="logoutChange()" />
+                @click="logoutChange()"
+              />
             </v-list>
           </v-menu>
         </v-btn>
