@@ -6,36 +6,29 @@
         <img
           src="@/assets/Easytrip_text.png"
           alt="Easytrip Logo"
-          class="w-36 h-auto object-contain transition-transform duration-300 hover:scale-105"
-        />
+          class="w-36 h-auto object-contain transition-transform duration-300 hover:scale-105" />
       </div>
       <nav class="hidden md:flex space-x-8 text-base font-semibold">
         <a
           href="#"
-          class="relative group text-gray-700 hover:text-black transition-colors duration-200"
-        >
+          class="relative group text-gray-700 hover:text-black transition-colors duration-200">
           探索
           <span
-            class="absolute bottom-0 left-0 w-0 h-0.5 bg-black transition-all duration-300 group-hover:w-full"
-          ></span>
+            class="absolute bottom-0 left-0 w-0 h-0.5 bg-black transition-all duration-300 group-hover:w-full"></span>
         </a>
         <a
           href="#"
-          class="relative group text-gray-700 hover:text-black transition-colors duration-200"
-        >
+          class="relative group text-gray-700 hover:text-black transition-colors duration-200">
           會員
           <span
-            class="absolute bottom-0 left-0 w-0 h-0.5 bg-black transition-all duration-300 group-hover:w-full"
-          ></span>
+            class="absolute bottom-0 left-0 w-0 h-0.5 bg-black transition-all duration-300 group-hover:w-full"></span>
         </a>
         <a
           href="#"
-          class="relative group text-gray-700 hover:text-black transition-colors duration-200"
-        >
+          class="relative group text-gray-700 hover:text-black transition-colors duration-200">
           里程
           <span
-            class="absolute bottom-0 left-0 w-0 h-0.5 bg-black transition-all duration-300 group-hover:w-full"
-          ></span>
+            class="absolute bottom-0 left-0 w-0 h-0.5 bg-black transition-all duration-300 group-hover:w-full"></span>
         </a>
       </nav>
       <div class="flex items-center gap-4 text-base">
@@ -44,14 +37,12 @@
           src="https://flagcdn.com/tw.svg"
           width="30"
           alt="Taiwan"
-          class="rounded transition-transform duration-300 hover:scale-105"
-        />
+          class="rounded transition-transform duration-300 hover:scale-105" />
         <span>TWD</span>
         <img
           src="@/assets/Easytrip.png"
           alt="User Avatar"
-          class="rounded-full w-10 h-10 transition-transform duration-300 hover:scale-110"
-        />
+          class="rounded-full w-10 h-10 transition-transform duration-300 hover:scale-110" />
       </div>
     </div>
   </header>
@@ -70,8 +61,7 @@
         class="relative group px-4 py-2 transition-colors duration-300"
         :class="
           selectedTab === tab.name ? 'text-black font-bold' : 'text-gray-500'
-        "
-      >
+        ">
         <span class="flex items-center gap-1">
           <i :class="['mdi', tab.icon]"></i>
           {{ tab.name }}
@@ -80,110 +70,79 @@
           class="absolute left-0 bottom-0 h-0.5 bg-black transition-all duration-300"
           :class="
             selectedTab === tab.name ? 'w-full' : 'w-0 group-hover:w-full'
-          "
-        >
+          ">
         </span>
       </button>
     </div>
 
     <!-- Search Bar -->
     <div
-      v-if="selectedTab === '航班'"
-      class="flex flex-wrap justify-center items-center gap-4 mb-10"
-    >
+      v-show="selectedTab === '航班'"
+      class="flex flex-wrap justify-center items-center gap-4 mb-10">
       <div
-        class="flex items-center bg-gray-100 px-4 py-3 rounded-full text-sm w-52 shadow-sm"
-      >
+        class="flex items-center bg-gray-100 px-4 py-3 rounded-full text-sm w-52 shadow-sm">
         <span class="mr-2 mdi mdi-airplane-takeoff text-gray-500"></span>
         <strong>From:</strong>
         <input
           type="text"
           placeholder="Origin"
-          class="bg-transparent outline-none ml-2 w-full placeholder:text-gray-400"
-        />
+          class="bg-transparent outline-none ml-2 w-full placeholder:text-gray-400" />
       </div>
 
       <div
-        class="flex items-center bg-gray-100 px-4 py-3 rounded-full text-sm w-52 shadow-sm"
-      >
+        class="flex items-center bg-gray-100 px-4 py-3 rounded-full text-sm w-52 shadow-sm">
         <span class="mr-2 mdi mdi-airplane-landing text-gray-500"></span>
         <strong>To:</strong>
         <input
           type="text"
           placeholder="Destination"
-          class="bg-transparent outline-none ml-2 w-full placeholder:text-gray-400"
-        />
+          class="bg-transparent outline-none ml-2 w-full placeholder:text-gray-400" />
       </div>
 
       <div
-        class="flex items-center bg-gray-100 px-4 py-3 rounded-full text-sm w-64 shadow-sm"
-      >
+        class="flex items-center bg-gray-100 px-4 py-3 rounded-full text-sm w-64 shadow-sm">
         <span class="mr-2 mdi mdi-calendar-range text-gray-500"></span>
         <input
           type="text"
           ref="dateInput"
           placeholder="Start → End"
           class="bg-transparent outline-none w-full placeholder:text-gray-400"
-          readonly
-        />
+          readonly />
       </div>
 
       <div
-        class="flex items-center bg-gray-100 px-4 py-3 rounded-full text-sm w-40 shadow-sm"
-      >
+        class="flex items-center bg-gray-100 px-4 py-3 rounded-full text-sm w-40 shadow-sm">
         <span class="mr-2 mdi mdi-account-multiple text-gray-500"></span>
         <span>1 Traveler</span>
       </div>
 
       <button
-        class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-full transition duration-300 shadow-md"
-      >
+        class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-full transition duration-300 shadow-md">
         搜尋
       </button>
     </div>
 
     <!-- 禮品用：禮品欄位 -->
     <div
-      v-if="selectedTab === '禮品'"
-      class="flex justify-center items-center gap-4 mb-10"
-    >
+      v-show="selectedTab === '禮品'"
+      class="flex justify-center items-center gap-4 mb-10">
       <div
-        class="flex items-center bg-gray-100 px-4 py-3 rounded-full text-sm w-full max-w-2xl shadow-sm"
-      >
+        class="flex items-center bg-gray-100 px-4 py-3 rounded-full text-sm w-full max-w-2xl shadow-sm">
         <span class="mr-2 mdi mdi-gift-outline text-gray-500"></span>
         <input
           type="text"
           placeholder="請輸入禮品關鍵字..."
-          class="bg-transparent outline-none w-full placeholder:text-gray-400"
-        />
+          class="bg-transparent outline-none w-full placeholder:text-gray-400" />
       </div>
       <button
-        class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-full transition duration-300 shadow-md"
-      >
+        class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-full transition duration-300 shadow-md">
         搜尋
       </button>
     </div>
 
     <!-- 發現更多目的地用：目的地欄位 -->
-    <div
-      v-if="selectedTab === '發現更多目的地'"
-      class="flex justify-center items-center gap-4 mb-10"
-    >
-      <div
-        class="flex items-center bg-gray-100 px-4 py-3 rounded-full text-sm w-full max-w-2xl shadow-sm"
-      >
-        <span class="mr-2 mdi mdi-map-marker-outline text-gray-500"></span>
-        <input
-          type="text"
-          placeholder="請輸入城市、景點或地區名稱..."
-          class="bg-transparent outline-none w-full placeholder:text-gray-400"
-        />
-      </div>
-      <button
-        class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-full transition duration-300 shadow-md"
-      >
-        搜尋
-      </button>
+    <div v-show="selectedTab === '發現更多目的地'">
+      <UserSearchBar v-model="searchQuery" />
     </div>
 
     <router-view />
@@ -191,8 +150,7 @@
     <!-- Footer -->
     <footer class="bg-gray-50 border-t border-gray-200 py-10 mt-16">
       <div
-        class="max-w-screen-xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8 text-sm text-gray-600"
-      >
+        class="max-w-screen-xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8 text-sm text-gray-600">
         <!-- About -->
         <div>
           <h3 class="text-base font-semibold mb-3">關於我們</h3>
@@ -229,16 +187,13 @@
           <div class="flex space-x-4">
             <a
               href="#"
-              class="mdi mdi-facebook text-2xl text-gray-600 hover:text-blue-600"
-            ></a>
+              class="mdi mdi-facebook text-2xl text-gray-600 hover:text-blue-600"></a>
             <a
               href="#"
-              class="mdi mdi-instagram text-2xl text-gray-600 hover:text-pink-500"
-            ></a>
+              class="mdi mdi-instagram text-2xl text-gray-600 hover:text-pink-500"></a>
             <a
               href="#"
-              class="mdi mdi-twitter text-2xl text-gray-600 hover:text-blue-400"
-            ></a>
+              class="mdi mdi-twitter text-2xl text-gray-600 hover:text-blue-400"></a>
           </div>
         </div>
       </div>
@@ -254,8 +209,10 @@
 import { ref, onMounted } from "vue";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
+import UserSearchBar from "@/components/UserSearchBar.vue";
 
 const selectedTab = ref("航班");
+const searchQuery = ref("");
 
 const tabs = [
   { name: "航班", icon: "mdi-airplane" },

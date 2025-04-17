@@ -15,8 +15,7 @@
       v-if="loading"
       indeterminate
       color="primary"
-      class="mb-4"
-    />
+      class="mb-4" />
 
     <!-- Table View -->
     <v-slide-y-transition>
@@ -24,8 +23,7 @@
         <v-data-table
           :headers="headers"
           :items="attractions"
-          class="elevation-1 rounded"
-        >
+          class="elevation-1 rounded">
           <template #item.image="{ item }">
             <v-img
               :src="
@@ -35,8 +33,7 @@
               height="64"
               width="96"
               cover
-              class="rounded"
-            />
+              class="rounded" />
           </template>
           <template #item.category="{ item }">
             {{ item.category?.join("， ") }}
@@ -68,7 +65,7 @@
       <div v-show="viewMode === 'Card' && !loading">
         <v-row justify="center" align="stretch" class="gap-4">
           <v-col v-for="a in attractions" :key="a.id" cols="12" sm="6" md="4">
-            <v-card class="rounded-lg elevation-2" style="width: 360px">
+            <v-card class="rounded-lg elevation-2">
               <v-img
                 :src="
                   a.photoUrl ||
@@ -76,8 +73,7 @@
                 "
                 height="280px"
                 cover
-                class="rounded-t-lg"
-              />
+                class="rounded-t-lg" />
               <v-card-title class="font-weight-bold">{{ a.name }}</v-card-title>
               <v-card-subtitle class="text-grey">{{ a.city }}</v-card-subtitle>
               <v-card-text>
@@ -88,8 +84,7 @@
                   readonly
                   dense
                   color="amber"
-                  size="20"
-                />
+                  size="20" />
                 <div class="mt-1 text-caption text-grey-darken-1">
                   {{ a.category?.join(", ") }}
                 </div>

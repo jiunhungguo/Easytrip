@@ -53,44 +53,14 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="editDialog" max-width="500">
-      <v-card>
-        <v-card-title>編輯城市</v-card-title>
-        <v-card-text>
-          <v-form ref="formRef" v-model="valid">
-            <v-text-field v-model="form.name" label="城市名稱" :rules="[r]" />
-            <v-text-field v-model="form.country" label="國家" :rules="[r]" />
-            <v-text-field v-model="form.latitude" label="緯度" :rules="[r]" />
-            <v-text-field v-model="form.longitude" label="經度" :rules="[r]" />
-            <v-file-input
-              v-model="form.imageFile"
-              label="上傳新圖片"
-              accept="image/*"
-              prepend-icon=""
-              prepend-inner-icon="mdi-camera" />
-          </v-form>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            color="primary"
-            variant="outlined"
-            @click="submitEdit"
-            :loading="loading">
-            確認
-          </v-btn>
-          <v-btn variant="outlined" text @click="editDialog = false"
-            >取消</v-btn
-          >
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <EditCityModal v-model="editDialog" :city="city" @updated="$emit('edit')" />
   </v-card>
 </template>
 
 <script setup>
 import { ref, reactive } from "vue";
 import axios from "axios";
+import EditCityModal from "./EditCityModal.vue";
 
 const props = defineProps({ city: Object });
 const emit = defineEmits(["edit", "delete"]);

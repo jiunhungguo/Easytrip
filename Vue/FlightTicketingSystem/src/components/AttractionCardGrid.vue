@@ -1,6 +1,6 @@
 <template>
   <v-row
-    justify="center"
+    justify="start"
     align="start"
     class="pa-6"
     style="gap: 24px; flex-wrap: wrap">
@@ -23,12 +23,12 @@ defineProps({
   cities: Array,
 });
 defineEmits(["edit", "delete"]);
-import AttractionCard from "./AttractionCard.vue";
+import AttractionCard from "./AttractionCardAdmin.vue";
 </script>
 
 <style scoped>
 .attraction-card-container {
-  width: 320px;
-  min-height: 320px;
+  width: 300px;
+  min-height: 300px;
 }
 </style>

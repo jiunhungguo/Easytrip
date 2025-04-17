@@ -20,5 +20,16 @@ export const useCityStore = defineStore("city", {
         this.loading = false;
       }
     },
+    async searchByName(name) {
+      try {
+        const res = await axios.get(
+          `http://localhost:8080/cities/city/${name}`
+        );
+        return Array.isArray(res.data) ? res.data : [res.data];
+      } catch (err) {
+        console.error("搜尋城市失敗", err);
+        return [];
+      }
+    },
   },
 });

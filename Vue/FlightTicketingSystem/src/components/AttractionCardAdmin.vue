@@ -38,102 +38,32 @@
       </div>
     </v-card-text>
 
-    <!-- 按鈕 -->
-    <AttractionCardActions
+    <!-- 按鈕（原本 actions 放回來） -->
+    <v-card-actions class="justify-center">
+      <v-btn color="primary" variant="outlined" @click="editDialog = true">
+        編輯
+      </v-btn>
+      <v-btn
+        color="error"
+        variant="outlined"
+        class="ml-2"
+        @click="deleteDialog = true">
+        刪除
+      </v-btn>
+    </v-card-actions>
+
+    <EditAttractionModal
+      v-model="editDialog"
       :attraction="attraction"
-      @edit="editDialog = true"
-      @delete="deleteDialog = true" />
-
-    <!-- 🗑 刪除 Dialog -->
-    <v-dialog v-model="deleteDialog" max-width="400">
-      <v-card class="pa-4 rounded-lg">
-        <v-card-title class="text-h6 font-weight-bold"
-          >確定要刪除?</v-card-title
-        >
-        <v-card-text class="text-body-2">
-          確定要刪除 <strong>{{ attraction.name }}</strong
-          >？
-        </v-card-text>
-        <v-card-actions class="justify-end">
-          <v-btn variant="outlined" color="error" @click="confirmDelete"
-            >刪除</v-btn
-          >
-          <v-btn variant="outlined" text @click="deleteDialog = false"
-            >取消</v-btn
-          >
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- ✏️ 編輯 Dialog -->
-    <v-dialog v-model="editDialog" max-width="500">
-      <v-card>
-        <v-card-title>編輯景點</v-card-title>
-        <v-card-text>
-          <v-form ref="formRef" v-model="valid">
-            <v-text-field v-model="form.name" label="景點名稱" :rules="[r]" />
-            <v-select
-              v-model="form.cityName"
-              :items="cities.map((city) => city.name)"
-              item-title="name"
-              item-value="id"
-              label="城市" />
-            <v-text-field v-model="form.address" label="地址" :rules="[r]" />
-            <v-text-field
-              v-model.number="form.rating"
-              label="評分 (0-5)"
-              type="number"
-              :rules="[r, ratingRule]" />
-            <v-textarea
-              v-model="form.description"
-              label="描述"
-              :rules="[r]"
-              rows="3" />
-            <v-text-field
-              v-model.number="form.latitude"
-              label="緯度"
-              type="number"
-              :rules="[r]" />
-            <v-text-field
-              v-model.number="form.longitude"
-              label="經度"
-              type="number"
-              :rules="[r]" />
-            <v-text-field
-              v-model="categoryInput"
-              label="分類 (用逗號分隔)"
-              :rules="[r]" />
-            <v-file-input
-              v-model="form.imageFile"
-              label="上傳新圖片（可選）"
-              accept="image/*"
-              prepend-icon=""
-              prepend-inner-icon="mdi-camera"
-              clearable />
-          </v-form>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            variant="outlined"
-            color="primary"
-            :loading="loading"
-            @click="submitEdit"
-            >確認</v-btn
-          >
-          <v-btn variant="outlined" text @click="editDialog = false"
-            >取消</v-btn
-          >
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+      :cities="cities"
+      @updated="$emit('edit')" />
   </v-card>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from "vue";
 import axios from "axios";
-import AttractionCardActions from "./AttractionCardActions.vue";
+import EditAttractionModal from "./EditAttractionModal.vue";
 
 const props = defineProps({ attraction: Object, cities: Array });
 const emit = defineEmits(["delete", "edit"]);

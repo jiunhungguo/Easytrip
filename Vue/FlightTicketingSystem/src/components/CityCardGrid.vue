@@ -1,6 +1,6 @@
 <template>
   <v-row
-    justify="center"
+    justify="start"
     align="start"
     class="pa-6"
     style="gap: 2rem; flex-wrap: wrap">
@@ -18,12 +18,12 @@ defineProps({
   cities: Array,
 });
 defineEmits(["edit", "delete"]);
-import CityCard from "./CityCard.vue";
+import CityCard from "./CityCardAdmin.vue";
 </script>
 
 <style scoped>
 .city-card-container {
-  width: 260px;
-  min-height: 320px;
+  width: 300px;
+  min-height: 300px;
 }
 </style>

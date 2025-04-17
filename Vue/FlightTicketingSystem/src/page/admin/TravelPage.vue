@@ -2,49 +2,186 @@
   <v-container
     fluid
     class="pa-6"
-    style="background-color: #f9f9f9; min-height: 100vh"
-  >
+    style="background-color: #f9f9f9; min-height: 100vh">
     <!-- Tabs -->
     <NavigationTabs :selectedTab="selectedTab" @select-tab="setSelectedTab" />
 
     <!-- Search Bar -->
-    <SearchBar v-model="searchQuery" @search="handleSearch" />
+    <v-slide-y-transition>
+      <div v-if="['cities', 'attractions'].includes(selectedTab)">
+        <SearchBar v-model="searchQuery" @search="handleSearch" />
+      </div>
+    </v-slide-y-transition>
+    <div class="d-flex justify-space-between align-center mb-4">
+      <v-btn-toggle v-model="viewMode" borderless>
+        <v-btn icon value="Card"><v-icon>mdi-view-grid</v-icon></v-btn>
+        <v-btn icon value="Table"><v-icon>mdi-table</v-icon></v-btn>
+      </v-btn-toggle>
+    </div>
 
+    <div class="mb-4 font-weight-bold">
+      <v-icon>mdi-table-eye</v-icon> Current View: {{ viewMode }}
+    </div>
     <!-- Tab Content -->
     <v-window v-model="selectedTab" class="mt-6">
       <!-- Search City -->
       <v-window-item value="cities">
-        <CityCardGrid
-          :cities="results"
-          @edit="handleCityUpdated"
-          @delete="handleCityDeleted"
-        />
+        <div v-if="viewMode === 'Card'">
+          <CityCardGrid
+            :cities="results"
+            @edit="handleCityUpdated"
+            @delete="handleCityDeleted" />
+        </div>
+        <div v-else>
+          <v-data-table
+            :headers="cityHeaders"
+            :items="results"
+            class="elevation-1 rounded">
+            <template #item.actions="{ item }">
+              <v-btn
+                size="small"
+                color="primary"
+                variant="outlined"
+                @click="handleEdit(item)"
+                >修改</v-btn
+              >
+              <v-btn
+                size="small"
+                color="error"
+                variant="outlined"
+                class="ml-2"
+                @click="handleDelete(item)"
+                >刪除</v-btn
+              >
+            </template>
+          </v-data-table>
+        </div>
       </v-window-item>
+
       <!-- All Cities -->
       <v-window-item value="allCities">
-        <CityCardGrid
-          :cities="results"
-          @edit="handleCityUpdated"
-          @delete="handleCityDeleted"
-        />
+        <div v-if="viewMode === 'Card'">
+          <CityCardGrid
+            :cities="results"
+            @edit="handleCityUpdated"
+            @delete="handleCityDeleted" />
+        </div>
+        <div v-else>
+          <v-data-table
+            :headers="cityHeaders"
+            :items="results"
+            class="elevation-1 rounded">
+            <template #item.actions="{ item }">
+              <v-btn
+                size="small"
+                color="primary"
+                variant="outlined"
+                @click="handleEdit(item)"
+                >修改</v-btn
+              >
+              <v-btn
+                size="small"
+                color="error"
+                variant="outlined"
+                class="ml-2"
+                @click="handleDelete(item)"
+                >刪除</v-btn
+              >
+            </template>
+          </v-data-table>
+        </div>
       </v-window-item>
+
       <!-- Search Attraction -->
       <v-window-item value="attractions">
-        <AttractionCardGrid
-          :attractions="results"
-          :cities="cities"
-          @edit="handleAttractionUpdated"
-          @delete="handleAttractionDeleted"
-        />
+        <div v-if="viewMode === 'Card'">
+          <AttractionCardGrid
+            :attractions="results"
+            :cities="cities"
+            @edit="handleAttractionUpdated"
+            @delete="handleAttractionDeleted" />
+        </div>
+        <div v-else>
+          <v-data-table
+            :headers="attractionHeaders"
+            :items="results"
+            class="elevation-1 rounded">
+            <template #item.image="{ item }">
+              <v-img
+                :src="item.photoUrl || 'https://via.placeholder.com/96x64'"
+                height="64"
+                width="96"
+                cover
+                class="rounded" />
+            </template>
+            <template #item.category="{ item }">
+              {{ item.category?.join("， ") }}
+            </template>
+            <template #item.actions="{ item }">
+              <v-btn
+                size="small"
+                color="primary"
+                variant="outlined"
+                @click="handleEdit(item)"
+                >修改</v-btn
+              >
+              <v-btn
+                size="small"
+                color="error"
+                variant="outlined"
+                class="ml-2"
+                @click="handleDelete(item)"
+                >刪除</v-btn
+              >
+            </template>
+          </v-data-table>
+        </div>
       </v-window-item>
+
       <!-- All Attractions -->
       <v-window-item value="allAttractions">
-        <AttractionCardGrid
-          :attractions="results"
-          :cities="cities"
-          @edit="handleAttractionUpdated"
-          @delete="handleAttractionDeleted"
-        />
+        <div v-if="viewMode === 'Card'">
+          <AttractionCardGrid
+            :attractions="results"
+            :cities="cities"
+            @edit="handleAttractionUpdated"
+            @delete="handleAttractionDeleted" />
+        </div>
+        <div v-else>
+          <v-data-table
+            :headers="attractionHeaders"
+            :items="results"
+            class="elevation-1 rounded">
+            <template #item.image="{ item }">
+              <v-img
+                :src="item.photoUrl || 'https://via.placeholder.com/96x64'"
+                height="64"
+                width="96"
+                cover
+                class="rounded" />
+            </template>
+            <template #item.category="{ item }">
+              {{ item.category?.join("， ") }}
+            </template>
+            <template #item.actions="{ item }">
+              <v-btn
+                size="small"
+                color="primary"
+                variant="outlined"
+                @click="handleEdit(item)"
+                >修改</v-btn
+              >
+              <v-btn
+                size="small"
+                color="error"
+                variant="outlined"
+                class="ml-2"
+                @click="handleDelete(item)"
+                >刪除</v-btn
+              >
+            </template>
+          </v-data-table>
+        </div>
       </v-window-item>
     </v-window>
 
@@ -53,8 +190,7 @@
       v-model="snackbar"
       color="success"
       timeout="3000"
-      location="bottom center"
-    >
+      location="bottom center">
       {{ snackbarMessage }}
     </v-snackbar>
   </v-container>
@@ -62,8 +198,19 @@
   <CreateAttractionModal
     ref="createAttractionModal"
     :cities="cities"
-    @created="handleAttractionCreated"
-  />
+    @created="handleAttractionCreated" />
+  <!-- 編輯 Dialog -->
+  <EditCityModal
+    v-if="selectedCity"
+    v-model="editCityDialog"
+    :city="selectedCity"
+    @updated="handleCityUpdated" />
+  <EditAttractionModal
+    v-if="selectedAttraction"
+    v-model="editAttractionDialog"
+    :attraction="selectedAttraction"
+    :cities="cities"
+    @updated="handleAttractionUpdated" />
 </template>
 
 <style scoped>
@@ -74,7 +221,7 @@
 </style>
 
 <script setup>
-import { ref, watch, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import axios from "axios";
 import NavigationTabs from "@/components/NavigationTabs.vue";
 import SearchBar from "@/components/SearchBar.vue";
@@ -82,23 +229,40 @@ import CityCardGrid from "@/components/CityCardGrid.vue";
 import AttractionCardGrid from "@/components/AttractionCardGrid.vue";
 import CreateCityModal from "@/components/CreateCityModal.vue";
 import CreateAttractionModal from "@/components/CreateAttractionModal.vue";
+import EditCityModal from "@/components/EditCityModal.vue";
+import EditAttractionModal from "@/components/EditAttractionModal.vue";
 
 const selectedTab = ref("cities");
+const viewMode = ref("Card");
+const createCityModal = ref(null);
+const createAttractionModal = ref(null);
 
-const createCityModal = ref(null); // 取得 modal 的 ref
-const createAttractionModal = ref(null); // 取得 modal 的 ref
+const cityHeaders = [
+  { title: "名稱", key: "name" },
+  { title: "國家", key: "country" },
+  { title: "經度", key: "longitude" },
+  { title: "緯度", key: "latitude" },
+  { title: "操作", key: "actions", sortable: false },
+];
+
+const attractionHeaders = [
+  { title: "名稱", key: "name" },
+  { title: "城市", key: "city" },
+  { title: "地址", key: "address" },
+  { title: "評分", key: "rating" },
+  { title: "分類", key: "category" },
+  { title: "操作", key: "actions", sortable: false },
+];
 
 const setSelectedTab = (tab) => {
   selectedTab.value = tab;
 
   if (tab === "addCities" && createCityModal.value) {
     createCityModal.value.dialog = true;
-    // selectedTab.value = "cities";
     return;
   }
   if (tab === "addAttractions" && createAttractionModal.value) {
     createAttractionModal.value.dialog = true;
-    // selectedTab.value = "attractions";
     return;
   }
   if (tab === "allCities") {
@@ -208,9 +372,23 @@ const reloadAttractions = async () => {
   results.value = attractions;
 };
 
-const fetchCities = async () => {
-  const response = await axios.get("/cities");
-  results.value = response.data.content;
+const selectedCity = ref(null);
+const selectedAttraction = ref(null);
+
+const editCityDialog = ref(false);
+const editAttractionDialog = ref(false);
+
+const handleEdit = (item) => {
+  if (selectedTab.value === "cities" || selectedTab.value === "allCities") {
+    selectedCity.value = item;
+    editCityDialog.value = true;
+  } else if (
+    selectedTab.value === "attractions" ||
+    selectedTab.value === "allAttractions"
+  ) {
+    selectedAttraction.value = item;
+    editAttractionDialog.value = true;
+  }
 };
 
 const handleCityUpdated = () => {
