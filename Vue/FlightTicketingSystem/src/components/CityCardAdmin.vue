@@ -3,13 +3,15 @@
     class="mx-auto transition-all duration-300 hover:shadow-xl hover:scale-[1.02]"
     max-width="320"
     elevation="3"
-    rounded="xl">
+    rounded="xl"
+  >
     <v-img
       :src="`http://localhost:8080${city.image}`"
       :alt="city.name"
       height="180"
       cover
-      class="rounded-t-xl" />
+      class="rounded-t-xl"
+    />
     <v-card-title class="text-center text-lg font-semibold py-2">
       {{ city.name }}
     </v-card-title>

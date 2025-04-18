@@ -3,7 +3,7 @@
     <div class="custom-search-wrapper">
       <v-icon class="search-icon" icon="mdi-magnify" />
       <input
-        v-model="localQuery"
+        v-model="query"
         type="text"
         placeholder="請輸入關鍵字"
         class="search-input"
@@ -26,35 +26,16 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref } from "vue";
 import { VIcon, VProgressCircular } from "vuetify/components";
 
-const props = defineProps({
-  modelValue: String,
-});
-const emit = defineEmits(["update:modelValue", "search"]);
-
-const localQuery = ref(props.modelValue || "");
+const query = defineModel();
+const emit = defineEmits(["search"]);
 const loading = ref(false);
-
-watch(localQuery, (val) => {
-  emit("update:modelValue", val);
-});
-
-watch(
-  () => props.modelValue,
-  (val) => {
-    if (val !== localQuery.value) {
-      localQuery.value = val;
-    }
-  }
-);
-
 const emitSearch = async () => {
-  if (!localQuery.value.trim()) return;
+  if (!query.value.trim()) return;
 
   loading.value = true;
-
   emit("search", () => {
     loading.value = false;
   });

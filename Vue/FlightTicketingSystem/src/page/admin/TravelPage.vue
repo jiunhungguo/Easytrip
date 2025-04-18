@@ -2,7 +2,8 @@
   <v-container
     fluid
     class="pa-6"
-    style="background-color: #f9f9f9; min-height: 100vh">
+    style="background-color: #f9f9f9; min-height: 100vh"
+  >
     <!-- Tabs -->
     <NavigationTabs :selectedTab="selectedTab" @select-tab="setSelectedTab" />
 
@@ -18,7 +19,6 @@
         <v-btn icon value="Table"><v-icon>mdi-table</v-icon></v-btn>
       </v-btn-toggle>
     </div>
-
     <div class="mb-4 font-weight-bold">
       <v-icon>mdi-table-eye</v-icon> Current View: {{ viewMode }}
     </div>
@@ -30,13 +30,15 @@
           <CityCardGrid
             :cities="results"
             @edit="handleCityUpdated"
-            @delete="handleCityDeleted" />
+            @delete="handleCityDeleted"
+          />
         </div>
         <div v-else>
           <v-data-table
             :headers="cityHeaders"
             :items="results"
-            class="elevation-1 rounded">
+            class="elevation-1 rounded"
+          >
             <template #item.actions="{ item }">
               <v-btn
                 size="small"
@@ -64,13 +66,15 @@
           <CityCardGrid
             :cities="results"
             @edit="handleCityUpdated"
-            @delete="handleCityDeleted" />
+            @delete="handleCityDeleted"
+          />
         </div>
         <div v-else>
           <v-data-table
             :headers="cityHeaders"
             :items="results"
-            class="elevation-1 rounded">
+            class="elevation-1 rounded"
+          >
             <template #item.actions="{ item }">
               <v-btn
                 size="small"
@@ -99,20 +103,23 @@
             :attractions="results"
             :cities="cities"
             @edit="handleAttractionUpdated"
-            @delete="handleAttractionDeleted" />
+            @delete="handleAttractionDeleted"
+          />
         </div>
         <div v-else>
           <v-data-table
             :headers="attractionHeaders"
             :items="results"
-            class="elevation-1 rounded">
+            class="elevation-1 rounded"
+          >
             <template #item.image="{ item }">
               <v-img
                 :src="item.photoUrl || 'https://via.placeholder.com/96x64'"
                 height="64"
                 width="96"
                 cover
-                class="rounded" />
+                class="rounded"
+              />
             </template>
             <template #item.category="{ item }">
               {{ item.category?.join("， ") }}
@@ -145,20 +152,23 @@
             :attractions="results"
             :cities="cities"
             @edit="handleAttractionUpdated"
-            @delete="handleAttractionDeleted" />
+            @delete="handleAttractionDeleted"
+          />
         </div>
         <div v-else>
           <v-data-table
             :headers="attractionHeaders"
             :items="results"
-            class="elevation-1 rounded">
+            class="elevation-1 rounded"
+          >
             <template #item.image="{ item }">
               <v-img
                 :src="item.photoUrl || 'https://via.placeholder.com/96x64'"
                 height="64"
                 width="96"
                 cover
-                class="rounded" />
+                class="rounded"
+              />
             </template>
             <template #item.category="{ item }">
               {{ item.category?.join("， ") }}
@@ -190,7 +200,8 @@
       v-model="snackbar"
       color="success"
       timeout="3000"
-      location="bottom center">
+      location="bottom center"
+    >
       {{ snackbarMessage }}
     </v-snackbar>
   </v-container>
@@ -198,19 +209,22 @@
   <CreateAttractionModal
     ref="createAttractionModal"
     :cities="cities"
-    @created="handleAttractionCreated" />
+    @created="handleAttractionCreated"
+  />
   <!-- 編輯 Dialog -->
   <EditCityModal
     v-if="selectedCity"
     v-model="editCityDialog"
     :city="selectedCity"
-    @updated="handleCityUpdated" />
+    @updated="handleCityUpdated"
+  />
   <EditAttractionModal
     v-if="selectedAttraction"
     v-model="editAttractionDialog"
     :attraction="selectedAttraction"
     :cities="cities"
-    @updated="handleAttractionUpdated" />
+    @updated="handleAttractionUpdated"
+  />
 </template>
 
 <style scoped>
@@ -224,7 +238,7 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import NavigationTabs from "@/components/NavigationTabs.vue";
-import SearchBar from "@/components/SearchBar.vue";
+import SearchBar from "@/components/travel/SearchBarAdmin.vue";
 import CityCardGrid from "@/components/CityCardGrid.vue";
 import AttractionCardGrid from "@/components/AttractionCardGrid.vue";
 import CreateCityModal from "@/components/CreateCityModal.vue";
@@ -232,7 +246,8 @@ import CreateAttractionModal from "@/components/CreateAttractionModal.vue";
 import EditCityModal from "@/components/EditCityModal.vue";
 import EditAttractionModal from "@/components/EditAttractionModal.vue";
 
-const selectedTab = ref("cities");
+const selectedTab = defineModel("selectedTab");
+const currentTab = ref("cities");
 const viewMode = ref("Card");
 const createCityModal = ref(null);
 const createAttractionModal = ref(null);

@@ -32,16 +32,5 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
-
-const props = defineProps({
-  selectedTab: String,
-});
-const emit = defineEmits(["select-tab"]);
-
-const selectedTab = ref(props.selectedTab);
-
-watch(selectedTab, (val) => {
-  emit("select-tab", val);
-});
+const selectedTab = defineModel("selectedTab");
 </script>

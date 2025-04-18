@@ -3,12 +3,16 @@
     justify="start"
     align="start"
     class="pa-6"
-    style="gap: 2rem; flex-wrap: wrap">
+    style="gap: 2rem; flex-wrap: wrap"
+  >
     <div v-for="city in cities" :key="city.id" class="city-card-container">
       <CityCard
+        v-for="city in cities"
+        :key="city.id"
         :city="city"
         @edit="$emit('edit', city)"
-        @delete="$emit('delete', city)" />
+        @delete="$emit('delete', city)"
+      />
     </div>
   </v-row>
 </template>

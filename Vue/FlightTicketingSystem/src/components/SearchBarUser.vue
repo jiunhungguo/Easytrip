@@ -3,17 +3,20 @@
     <!-- 搜尋列 -->
     <div class="flex justify-center items-center gap-4 mb-10">
       <div
-        class="flex items-center bg-gray-100 px-4 py-3 rounded-full text-sm w-full max-w-2xl shadow-sm">
+        class="flex items-center bg-gray-100 px-4 py-3 rounded-full text-sm w-full max-w-2xl shadow-sm"
+      >
         <span class="mr-2 mdi mdi-map-marker-outline text-gray-500"></span>
         <input
           v-model="model"
           type="text"
           placeholder="請輸入城市、景點或地區名稱..."
-          class="bg-transparent outline-none w-full placeholder:text-gray-400" />
+          class="bg-transparent outline-none w-full placeholder:text-gray-400"
+        />
       </div>
       <button
         @click="handleSearch"
-        class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-full transition duration-300 shadow-md">
+        class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-full transition duration-300 shadow-md"
+      >
         搜尋
       </button>
     </div>
@@ -30,19 +33,22 @@
         !loading &&
         (cityResults.length > 0 || attractionResults.length > 0)
       "
-      class="px-4">
+      class="px-4"
+    >
       <div v-if="cityResults.length > 0" class="max-w-7xl mx-auto px-6">
         <h2 class="text-xl font-bold mb-4">相關城市</h2>
-        <CityCardGrid :cities="cityResults" />
+        <CardGrid :cities="cityResults" />
       </div>
 
       <div
         v-if="attractionResults.length > 0"
-        class="mt-10 max-w-7xl mx-auto px-6">
+        class="mt-10 max-w-7xl mx-auto px-6"
+      >
         <h2 class="text-xl font-bold mb-4">相關景點</h2>
         <AttractionCardGrid
           :attractions="attractionResults"
-          :cities="allCities" />
+          :cities="allCities"
+        />
       </div>
     </div>
 
@@ -55,7 +61,8 @@
         cityResults.length === 0 &&
         attractionResults.length === 0
       "
-      class="text-center text-gray-500 mt-10">
+      class="text-center text-gray-500 mt-10"
+    >
       查無符合的城市或景點
     </div>
   </div>
@@ -65,7 +72,7 @@
 import { ref, onMounted } from "vue";
 import { useCityStore } from "@/stores/cityStore";
 import { useAttractionStore } from "@/stores/attractionStore";
-import CityCardGrid from "@/components/CityCardGrid.vue";
+import CardGrid from "@/components/CardGrid.vue";
 import AttractionCardGrid from "@/components/AttractionCardGrid.vue";
 
 const model = defineModel();

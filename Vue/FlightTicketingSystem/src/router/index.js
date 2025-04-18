@@ -30,18 +30,8 @@ const router = createRouter({
       // component: () => import("@/layouts/userView.vue"),
     },
     {
-      path: "/travel",
+      path: "/user",
       component: () => import("@/layouts/userView.vue"),
-    },
-    {
-      path: "/usertest",
-      component: () => import("@/layouts/userTestView.vue"),
-      children: [
-        {
-          path: "attraction",
-          component: () => import("@/page/admin/AdminAttractions.vue"),
-        },
-      ],
     },
 
     {
@@ -87,6 +77,10 @@ const router = createRouter({
         {
           path: "travel",
           component: () => import("@/page/admin/TravelPage.vue"),
+        },
+        {
+          path: "travelnew",
+          component: () => import("@/page/admin/TravelPageNew.vue"),
         },
       ],
     },
