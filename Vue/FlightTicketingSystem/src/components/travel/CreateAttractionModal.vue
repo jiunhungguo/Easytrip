@@ -1,44 +1,94 @@
 <template>
-  <BaseDialog v-model="dialog" @confirm="handleConfirm">
-    <template #title>新增景點</template>
+  <v-dialog v-model="model" max-width="700">
+    <v-card>
+      <v-card-title class="text-h6 font-weight-bold">新增景點</v-card-title>
+      <v-card-text>
+        <v-form ref="formRef" v-model="valid" lazy-validation>
+          <v-carousel
+            v-if="photos.length > 0"
+            height="180"
+            hide-delimiter-background
+            delimiter-icon="mdi-circle"
+            show-arrows="hover"
+            cycle
+            class="rounded-t-xl mt-4">
+            <v-carousel-item v-for="(photo, i) in photos" :key="i">
+              <v-img :src="photo.url" height="180" cover />
+            </v-carousel-item>
+          </v-carousel>
+          <v-text-field v-model="form.name" label="名稱" :rules="[required]" />
+          <v-select
+            v-model="form.cityName"
+            :items="cities.map((c) => c.name)"
+            label="所屬城市"
+            :rules="[required]" />
+          <v-text-field
+            v-model="form.address"
+            label="地址"
+            :rules="[required]" />
+          <v-textarea v-model="form.description" label="描述" />
 
-    <v-form ref="formRef" v-model="formValid">
-      <v-text-field
-        label="景點名稱"
-        v-model="newAttraction.name"
-        :rules="[rules.required]"
-      />
-      <v-text-field
-        label="地址"
-        v-model="newAttraction.address"
-        :rules="[rules.required]"
-      />
-      <v-select
-        label="城市"
-        v-model="newAttraction.city"
-        :items="cities"
-        item-title="name"
-        item-value="name"
-        :rules="[rules.required]"
-      />
-      <v-text-field
-        label="評分"
-        v-model="newAttraction.rating"
-        type="number"
-        :rules="[rules.required, rules.rating]"
-      />
-    </v-form>
+          <v-text-field
+            v-model.number="form.rating"
+            label="評分"
+            type="number"
+            :rules="[required, ratingRule]" />
 
-    <template #actions>
-      <v-btn text @click="dialog = false">取消</v-btn>
-      <v-btn color="primary" @click="handleConfirm">新增</v-btn>
-    </template>
-  </BaseDialog>
+          <v-combobox
+            v-model="form.category"
+            label="分類"
+            multiple
+            chips
+            deletable-chips
+            hint="用逗號分隔或手動新增"
+            persistent-hint />
+
+          <v-text-field
+            v-model.number="form.latitude"
+            label="緯度"
+            type="number"
+            :rules="[required, number]" />
+          <v-text-field
+            v-model.number="form.longitude"
+            label="經度"
+            type="number"
+            :rules="[required, number]" />
+
+          <v-file-input
+            label="圖片（可多選）"
+            accept="image/*"
+            prepend-icon=""
+            prepend-inner-icon="mdi-camera"
+            v-model="form.imageFiles"
+            multiple
+            show-size
+            @change="previewImages" />
+        </v-form>
+      </v-card-text>
+      <v-card-actions class="justify-end">
+        <v-btn
+          :disabled="!valid || loading"
+          color="primary"
+          variant="outlined"
+          @click="submit">
+          <v-progress-circular
+            v-if="loading"
+            indeterminate
+            size="18"
+            width="2"
+            color="white"
+            class="mr-2" />
+          確認
+        </v-btn>
+        <v-btn text variant="outlined" @click="close">取消</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
-import BaseDialog from "./BaseDialog.vue";
+import { ref, reactive, watch } from "vue";
+import axios from "axios";
 
 const props = defineProps({
   modelValue: Boolean,
@@ -46,39 +96,93 @@ const props = defineProps({
 });
 const emit = defineEmits(["update:modelValue", "created"]);
 
-const dialog = ref(props.modelValue);
+const model = ref(props.modelValue);
 watch(
   () => props.modelValue,
-  (val) => (dialog.value = val)
+  (val) => (model.value = val)
 );
-watch(dialog, (val) => emit("update:modelValue", val));
+watch(model, (val) => emit("update:modelValue", val));
 
-const newAttraction = ref({
+const valid = ref(false);
+const loading = ref(false);
+const formRef = ref(null);
+const photos = ref([]);
+
+const form = reactive({
   name: "",
+  cityName: "",
   address: "",
-  city: "",
-  rating: "",
+  description: "",
+  rating: 0,
+  category: [],
+  latitude: null,
+  longitude: null,
+  imageFiles: [],
 });
 
-const formRef = ref();
-const formValid = ref(false);
+const required = (v) => !!v || "必填";
+const number = (v) => (typeof v === "number" && !isNaN(v)) || "必須是數字";
+const ratingRule = (v) => (v >= 0 && v <= 5) || "0 ~ 5 之間";
 
-const rules = {
-  required: (v) => !!v || "必填",
-  rating: (v) => (!isNaN(parseFloat(v)) && v >= 0 && v <= 5) || "0～5 分數範圍",
+const previewImages = () => {
+  const files = Array.isArray(form.imageFiles) ? form.imageFiles : [];
+  photos.value = files.map((f) => ({
+    url: URL.createObjectURL(f),
+    name: f.name,
+  }));
 };
 
-function handleConfirm() {
-  if (!formRef.value?.validate()) return;
-  emit("created", newAttraction.value);
-  dialog.value = false;
-  newAttraction.value = {
-    name: "",
-    address: "",
-    city: "",
-    rating: "",
-  };
-}
-</script>
+const close = () => {
+  model.value = false;
+};
 
-<style scoped></style>
+const submit = async () => {
+  const isValid = await formRef.value?.validate();
+  if (!isValid) return;
+
+  loading.value = true;
+  try {
+    const selectedCity = props.cities.find(
+      (city) => city.name === form.cityName
+    );
+
+    const res = await axios.post("http://localhost:8080/attractions", {
+      name: form.name,
+      address: form.address,
+      cityId: selectedCity?.id,
+      description: form.description,
+      rating: form.rating,
+      category: form.category,
+      latitude: form.latitude,
+      longitude: form.longitude,
+    });
+
+    const attractionId = res.data.id;
+
+    if (form.imageFiles.length > 0) {
+      for (const file of form.imageFiles) {
+        const formData = new FormData();
+        formData.append("image", file);
+        const uploadRes = await axios.post(
+          "http://localhost:8080/photos/upload",
+          formData,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+        const uploadedUrl = uploadRes.data.url;
+        await axios.post("http://localhost:8080/photos", {
+          attractionId,
+          url: uploadedUrl,
+          caption: form.name,
+        });
+      }
+    }
+
+    emit("created");
+    close();
+  } catch (err) {
+    console.error("新增景點失敗", err);
+  } finally {
+    loading.value = false;
+  }
+};
+</script>

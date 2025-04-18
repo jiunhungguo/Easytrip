@@ -1,42 +1,66 @@
 <template>
-  <BaseDialog v-model="dialog" @confirm="handleConfirm">
-    <template #title>編輯城市</template>
+  <v-dialog v-model="model" max-width="500">
+    <v-card>
+      <v-card-title class="text-h6 font-weight-bold">編輯城市</v-card-title>
+      <v-card-text>
+        <v-form ref="formRef" v-model="valid" lazy-validation>
+          <!-- 預覽 -->
+          <v-img
+            v-if="previewUrl"
+            :src="previewUrl"
+            height="150"
+            class="mt-2 rounded"
+            cover />
+          <v-text-field v-model="form.name" label="名稱" :rules="[required]" />
+          <v-text-field
+            v-model="form.country"
+            label="國家"
+            :rules="[required]" />
+          <v-text-field
+            v-model.number="form.latitude"
+            label="緯度"
+            type="number"
+            :rules="[required, number]" />
+          <v-text-field
+            v-model.number="form.longitude"
+            label="經度"
+            type="number"
+            :rules="[required, number]" />
 
-    <v-form ref="formRef" v-model="formValid">
-      <v-text-field
-        label="城市名稱"
-        v-model="localCity.name"
-        :rules="[rules.required]"
-      />
-      <v-text-field
-        label="國家"
-        v-model="localCity.country"
-        :rules="[rules.required]"
-      />
-      <v-text-field
-        label="經度"
-        v-model="localCity.longitude"
-        type="number"
-        :rules="[rules.required, rules.number]"
-      />
-      <v-text-field
-        label="緯度"
-        v-model="localCity.latitude"
-        type="number"
-        :rules="[rules.required, rules.number]"
-      />
-    </v-form>
-
-    <template #actions>
-      <v-btn text @click="dialog = false">取消</v-btn>
-      <v-btn color="primary" @click="handleConfirm">保存</v-btn>
-    </template>
-  </BaseDialog>
+          <!-- 圖片上傳 -->
+          <v-file-input
+            label="城市圖片"
+            accept="image/*"
+            prepend-icon=""
+            prepend-inner-icon="mdi-camera"
+            v-model="form.imageFile"
+            @change="previewImage" />
+        </v-form>
+      </v-card-text>
+      <v-card-actions class="justify-end">
+        <v-btn
+          :disabled="!valid || loading"
+          color="primary"
+          variant="outlined"
+          @click="submit">
+          <v-progress-circular
+            v-if="loading"
+            indeterminate
+            size="18"
+            width="2"
+            color="white"
+            class="mr-2" />
+          確認
+        </v-btn>
+        <v-btn text variant="outlined" @click="close">取消</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
-import BaseDialog from "./BaseDialog.vue";
+import { ref, reactive, watch } from "vue";
+import axios from "axios";
 
 const props = defineProps({
   modelValue: Boolean,
@@ -44,34 +68,93 @@ const props = defineProps({
 });
 const emit = defineEmits(["update:modelValue", "updated"]);
 
-const dialog = ref(props.modelValue);
+const model = ref(props.modelValue);
 watch(
   () => props.modelValue,
-  (val) => (dialog.value = val)
+  (val) => (model.value = val)
 );
-watch(dialog, (val) => emit("update:modelValue", val));
+watch(model, (val) => emit("update:modelValue", val));
 
-const localCity = ref({ ...props.city });
+const valid = ref(false);
+const loading = ref(false);
+const previewUrl = ref("");
+
+const formRef = ref(null);
+const form = reactive({
+  name: "",
+  country: "",
+  latitude: null,
+  longitude: null,
+  imageFile: null,
+});
+
 watch(
   () => props.city,
-  (newVal) => {
-    if (newVal) localCity.value = { ...newVal };
-  }
+  (city) => {
+    if (city) {
+      form.name = city.name || "";
+      form.country = city.country || "";
+      form.latitude = city.latitude || 0;
+      form.longitude = city.longitude || 0;
+      previewUrl.value = city.image?.startsWith("http")
+        ? city.image
+        : `http://localhost:8080${city.image}`;
+    }
+  },
+  { immediate: true }
 );
 
-const formRef = ref();
-const formValid = ref(false);
+const required = (v) => !!v || "必填";
+const number = (v) => (typeof v === "number" && !isNaN(v)) || "必須是數字";
 
-const rules = {
-  required: (v) => !!v || "必填",
-  number: (v) => !isNaN(parseFloat(v)) || "需為數字",
+const previewImage = () => {
+  const file = form.imageFile;
+  if (file) {
+    previewUrl.value = URL.createObjectURL(file);
+  }
 };
 
-function handleConfirm() {
-  if (!formRef.value?.validate()) return;
-  emit("updated", localCity.value);
-  dialog.value = false;
-}
-</script>
+const close = () => {
+  model.value = false;
+};
 
-<style scoped></style>
+const submit = async () => {
+  const isValid = await formRef.value?.validate();
+  if (!isValid) return;
+
+  loading.value = true;
+  try {
+    // 更新城市資料
+    await axios.put(`http://localhost:8080/cities/${props.city.id}`, {
+      name: form.name,
+      country: form.country,
+      latitude: form.latitude,
+      longitude: form.longitude,
+    });
+
+    // 圖片上傳
+    if (form.imageFile) {
+      const formData = new FormData();
+      formData.append("image", form.imageFile);
+      const uploadRes = await axios.post(
+        "http://localhost:8080/photos/upload",
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+      const uploadedUrl = uploadRes.data.url;
+
+      await axios.post("http://localhost:8080/photos", {
+        cityId: props.city.id,
+        url: uploadedUrl,
+      });
+    }
+
+    emit("updated");
+    close();
+  } catch (err) {
+    console.error("城市更新失敗", err);
+  } finally {
+    loading.value = false;
+  }
+};
+</script>

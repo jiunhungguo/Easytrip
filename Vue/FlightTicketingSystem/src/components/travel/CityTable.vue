@@ -5,8 +5,7 @@
         size="small"
         color="primary"
         variant="outlined"
-        @click="$emit('edit', item)"
-      >
+        @click="$emit('edit', item)">
         修改
       </v-btn>
       <v-btn
@@ -14,8 +13,7 @@
         color="error"
         variant="outlined"
         class="ml-2"
-        @click="$emit('delete', item)"
-      >
+        @click="$emit('delete', item)">
         刪除
       </v-btn>
     </template>

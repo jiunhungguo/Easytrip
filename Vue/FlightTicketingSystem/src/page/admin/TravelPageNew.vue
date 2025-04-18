@@ -2,8 +2,7 @@
   <v-container
     fluid
     class="pa-6"
-    style="background-color: #f9f9f9; min-height: 100vh"
-  >
+    style="background-color: #f9f9f9; min-height: 100vh">
     <NavigationTabs v-model:selectedTab="currentTab" />
     <v-slide-y-transition>
       <template v-if="searchBarTabs.includes(currentTab)">
@@ -39,8 +38,7 @@
       <v-window-item
         v-for="tab in ['cities', 'allCities', 'attractions', 'allAttractions']"
         :key="tab"
-        :value="tab"
-      >
+        :value="tab">
         <component :is="getViewComponent(tab)" v-bind="getViewProps(tab)" />
       </v-window-item>
     </v-window>
@@ -50,28 +48,24 @@
       v-model="snackbar"
       color="success"
       timeout="3000"
-      location="bottom center"
-    >
+      location="bottom center">
       {{ snackbarMessage }}
     </v-snackbar>
   </v-container>
   <CreateCityModal v-model="modals.createCity" />
   <CreateAttractionModal
     v-model="modals.createAttraction"
-    v-bind="modalProps"
-  />
+    v-bind="modalProps" />
 
   <EditCityModal
     v-model="modals.editCity"
     :city="selectedCity"
-    v-show="!!selectedCity"
-  />
+    v-show="!!selectedCity" />
   <EditAttractionModal
     v-model="modals.editAttraction"
     :attraction="selectedAttraction"
     v-bind="modalProps"
-    v-show="!!selectedAttraction"
-  />
+    v-show="!!selectedAttraction" />
 </template>
 
 <script setup>
@@ -175,22 +169,49 @@ function handleAttractionDeleted(item) {
   showSnackbar("景點已刪除");
 }
 
-const emitMap = {
-  city: {
-    onEdit: handleCityUpdated,
-    onDelete: handleCityDeleted,
-  },
-  attraction: {
-    onEdit: handleAttractionUpdated,
-    onDelete: handleAttractionDeleted,
-  },
+const handleEdit = (item) => {
+  if (["cities", "allCities"].includes(currentTab.value)) {
+    selectedCity.value = item;
+    modals.editCity = true;
+  } else if (["attractions", "allAttractions"].includes(currentTab.value)) {
+    selectedAttraction.value = item;
+    modals.editAttraction = true;
+  }
+};
+
+const handleDelete = async (item) => {
+  try {
+    const isCity = ["cities", "allCities"].includes(currentTab.value);
+    const confirmMsg = isCity
+      ? `你確定要刪除城市「${item.name}」嗎？`
+      : `你確定要刪除景點「${item.name}」嗎？`;
+
+    const confirmed = window.confirm(confirmMsg);
+    if (!confirmed) return;
+
+    if (isCity) {
+      await axios.delete(`http://localhost:8080/cities/${item.id}`);
+      showSnackbar("城市已刪除");
+      cityStore.fetchCities(); // 更新列表
+    } else {
+      await axios.delete(`http://localhost:8080/attractions/${item.id}`);
+      showSnackbar("景點已刪除");
+      attractionStore.fetchAttractions(); // 更新列表
+    }
+  } catch (err) {
+    console.error("刪除失敗", err);
+    showSnackbar("刪除失敗，請稍後再試");
+  }
 };
 
 const { getViewComponent, getViewProps } = useTabView(
   viewMode,
   results,
   cities,
-  emitMap
+  handleEdit,
+  handleDelete,
+  cityHeaders,
+  attractionHeaders
 );
 
 const apiPaths = {

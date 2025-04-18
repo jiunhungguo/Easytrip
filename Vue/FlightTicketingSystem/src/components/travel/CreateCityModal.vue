@@ -1,82 +1,143 @@
 <template>
-  <BaseDialog v-model="dialog" @confirm="handleConfirm">
-    <template #title>新增城市</template>
-
-    <v-form ref="formRef" v-model="formValid">
-      <v-text-field
-        label="城市名稱"
-        v-model="newCity.name"
-        :rules="[rules.required]"
-      />
-      <v-text-field
-        label="國家"
-        v-model="newCity.country"
-        :rules="[rules.required]"
-      />
-      <v-text-field
-        label="經度"
-        v-model="newCity.longitude"
-        type="number"
-        :rules="[rules.required, rules.number]"
-      />
-      <v-text-field
-        label="緯度"
-        v-model="newCity.latitude"
-        type="number"
-        :rules="[rules.required, rules.number]"
-      />
-    </v-form>
-
-    <template #actions>
-      <v-btn text @click="dialog = false">取消</v-btn>
-      <v-btn color="primary" @click="handleConfirm">新增</v-btn>
-    </template>
-  </BaseDialog>
+  <v-dialog v-model="model" max-width="600">
+    <v-card>
+      <v-card-title class="text-h6 font-weight-bold">新增城市</v-card-title>
+      <v-card-text>
+        <v-form ref="formRef" v-model="valid" lazy-validation>
+          <v-img
+            v-if="previewUrl"
+            :src="previewUrl"
+            height="150"
+            class="mt-2 rounded"
+            cover />
+          <v-text-field v-model="form.name" label="名稱" :rules="[required]" />
+          <v-text-field
+            v-model="form.country"
+            label="國家"
+            :rules="[required]" />
+          <v-text-field
+            v-model.number="form.latitude"
+            label="緯度"
+            type="number"
+            :rules="[required, number]" />
+          <v-text-field
+            v-model.number="form.longitude"
+            label="經度"
+            type="number"
+            :rules="[required, number]" />
+          <v-file-input
+            label="城市圖片"
+            accept="image/*"
+            prepend-icon=""
+            prepend-inner-icon="mdi-camera"
+            v-model="form.imageFile"
+            show-size
+            @change="previewImage" />
+        </v-form>
+      </v-card-text>
+      <v-card-actions class="justify-end">
+        <v-btn
+          :disabled="!valid || loading"
+          variant="outlined"
+          color="primary"
+          @click="submit">
+          <v-progress-circular
+            v-if="loading"
+            indeterminate
+            size="18"
+            width="2"
+            color="white"
+            class="mr-2" />
+          確認
+        </v-btn>
+        <v-btn text variant="outlined" @click="close">取消</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
-import BaseDialog from "./BaseDialog.vue";
+import { ref, reactive, watch } from "vue";
+import axios from "axios";
 
 const props = defineProps({
   modelValue: Boolean,
 });
 const emit = defineEmits(["update:modelValue", "created"]);
 
-const dialog = ref(props.modelValue);
+const model = ref(props.modelValue);
 watch(
   () => props.modelValue,
-  (val) => (dialog.value = val)
+  (val) => (model.value = val)
 );
-watch(dialog, (val) => emit("update:modelValue", val));
+watch(model, (val) => emit("update:modelValue", val));
 
-const formRef = ref();
-const formValid = ref(false);
+const valid = ref(false);
+const loading = ref(false);
+const formRef = ref(null);
+const previewUrl = ref("");
 
-const newCity = ref({
+const form = reactive({
   name: "",
   country: "",
-  longitude: "",
-  latitude: "",
+  latitude: null,
+  longitude: null,
+  imageFile: null,
 });
 
-const rules = {
-  required: (v) => !!v || "必填",
-  number: (v) => !isNaN(parseFloat(v)) || "需為數字",
+const required = (v) => !!v || "必填";
+const number = (v) => (typeof v === "number" && !isNaN(v)) || "必須是數字";
+
+const previewImage = () => {
+  const file = form.imageFile;
+  if (file) {
+    previewUrl.value = URL.createObjectURL(file);
+  }
 };
 
-function handleConfirm() {
-  if (!formRef.value?.validate()) return;
-  emit("created", newCity.value);
-  dialog.value = false;
-  // 重置表單（可選）
-  newCity.value = {
-    name: "",
-    country: "",
-    longitude: "",
-    latitude: "",
-  };
-}
-</script>
+const close = () => {
+  model.value = false;
+};
 
-<style scoped></style>
+const submit = async () => {
+  const isValid = await formRef.value?.validate();
+  if (!isValid) return;
+
+  loading.value = true;
+  try {
+    const cityRes = await axios.post("http://localhost:8080/cities", {
+      name: form.name,
+      country: form.country,
+      latitude: form.latitude,
+      longitude: form.longitude,
+    });
+
+    const cityId = cityRes.data.id;
+
+    if (form.imageFile) {
+      const formData = new FormData();
+      formData.append("image", form.imageFile);
+      const uploadRes = await axios.post(
+        "http://localhost:8080/photos/upload",
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+
+      const uploadedUrl = uploadRes.data.url;
+
+      await axios.post("http://localhost:8080/photos", {
+        cityId,
+        url: uploadedUrl,
+        caption: form.name,
+      });
+    }
+
+    emit("created");
+    close();
+  } catch (err) {
+    console.error("新增城市失敗", err);
+  } finally {
+    loading.value = false;
+  }
+};
+</script>

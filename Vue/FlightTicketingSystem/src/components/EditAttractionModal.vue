@@ -76,7 +76,7 @@
           @click="submit"
           >儲存</v-btn
         >
-        <v-btn variant="text" @click="dialog = false">取消</v-btn>
+        <v-btn variant="outlined" text @click="dialog = false">取消</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

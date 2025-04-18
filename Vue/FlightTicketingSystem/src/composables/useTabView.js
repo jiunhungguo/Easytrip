@@ -4,7 +4,15 @@ import CityCardGrid from "@/components/CityCardGrid.vue";
 import AttractionTable from "@/components/travel/AttractionTable.vue";
 import AttractionCardGrid from "@/components/AttractionCardGrid.vue";
 
-export function useTabView(viewMode, results, cities, emitMap) {
+export function useTabView(
+  viewMode,
+  results,
+  cities,
+  handleEdit,
+  handleDelete,
+  cityHeaders,
+  attractionHeaders
+) {
   const getViewComponent = (tab) => {
     const isCard = viewMode.value === "Card";
     const map = {
@@ -20,7 +28,9 @@ export function useTabView(viewMode, results, cities, emitMap) {
     if (["cities", "allCities"].includes(tab)) {
       return {
         cities: results.value,
-        ...emitMap.city,
+        headers: cityHeaders,
+        onEdit: handleEdit,
+        onDelete: handleDelete,
       };
     }
 
@@ -28,7 +38,9 @@ export function useTabView(viewMode, results, cities, emitMap) {
       return {
         attractions: results.value,
         cities: cities.value,
-        ...emitMap.attraction,
+        headers: attractionHeaders,
+        onEdit: handleEdit,
+        onDelete: handleDelete,
       };
     }
 
