@@ -74,12 +74,12 @@ const router = createRouter({
           path: "Ticket",
           component: () => import("@/page/admin/Ticket.vue"),
         },
+        // {
+        //   path: "travel",
+        //   component: () => import("@/page/admin/TravelPage.vue"),
+        // },
         {
           path: "travel",
-          component: () => import("@/page/admin/TravelPage.vue"),
-        },
-        {
-          path: "travelnew",
           component: () => import("@/page/admin/TravelPageNew.vue"),
         },
       ],

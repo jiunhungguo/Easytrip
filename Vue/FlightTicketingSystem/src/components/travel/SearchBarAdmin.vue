@@ -19,7 +19,7 @@
             color="white"
           />
         </template>
-        <template v-else> Search </template>
+        <template v-else> 搜尋 </template>
       </button>
     </div>
   </div>
@@ -80,8 +80,8 @@ const emitSearch = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #3de4b3;
-  color: #000;
+  background-color: #1976d2;
+  color: #ffff;
   font-weight: 600;
   border: none;
   border-radius: 9999px;

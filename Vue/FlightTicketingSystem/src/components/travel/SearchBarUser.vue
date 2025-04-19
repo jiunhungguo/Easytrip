@@ -72,8 +72,8 @@
 import { ref, onMounted } from "vue";
 import { useCityStore } from "@/stores/cityStore";
 import { useAttractionStore } from "@/stores/attractionStore";
-import CardGrid from "@/components/CardGrid.vue";
-import AttractionCardGrid from "@/components/AttractionCardGrid.vue";
+import CardGrid from "@/components/travel/CardGrid.vue";
+import AttractionCardGrid from "@/components/travel/AttractionCardGrid.vue";
 
 const model = defineModel();
 const loading = ref(false);

@@ -2,7 +2,8 @@
   <v-container
     fluid
     class="pa-6"
-    style="background-color: #f9f9f9; min-height: 100vh">
+    style="background-color: #f9f9f9; min-height: 100vh"
+  >
     <NavigationTabs v-model:selectedTab="currentTab" />
     <v-slide-y-transition>
       <template v-if="searchBarTabs.includes(currentTab)">
@@ -38,7 +39,8 @@
       <v-window-item
         v-for="tab in ['cities', 'allCities', 'attractions', 'allAttractions']"
         :key="tab"
-        :value="tab">
+        :value="tab"
+      >
         <component :is="getViewComponent(tab)" v-bind="getViewProps(tab)" />
       </v-window-item>
     </v-window>
@@ -48,24 +50,28 @@
       v-model="snackbar"
       color="success"
       timeout="3000"
-      location="bottom center">
+      location="bottom center"
+    >
       {{ snackbarMessage }}
     </v-snackbar>
   </v-container>
   <CreateCityModal v-model="modals.createCity" />
   <CreateAttractionModal
     v-model="modals.createAttraction"
-    v-bind="modalProps" />
+    v-bind="modalProps"
+  />
 
   <EditCityModal
     v-model="modals.editCity"
     :city="selectedCity"
-    v-show="!!selectedCity" />
+    v-show="!!selectedCity"
+  />
   <EditAttractionModal
     v-model="modals.editAttraction"
     :attraction="selectedAttraction"
     v-bind="modalProps"
-    v-show="!!selectedAttraction" />
+    v-show="!!selectedAttraction"
+  />
 </template>
 
 <script setup>
@@ -73,9 +79,9 @@ import { ref, watch, reactive, computed, onMounted } from "vue";
 import axios from "axios";
 import NavigationTabs from "@/components/travel/NavigationTabs.vue";
 import SearchBar from "@/components/travel/SearchBarAdmin.vue";
-import CityCardGrid from "@/components/CityCardGrid.vue";
+import CityCardGrid from "@/components/travel/CityCardGrid.vue";
 import CityTable from "@/components/travel/CityTable.vue";
-import AttractionCardGrid from "@/components/AttractionCardGrid.vue";
+import AttractionCardGrid from "@/components/travel/AttractionCardGrid.vue";
 import AttractionTable from "@/components/travel/AttractionTable.vue";
 import CreateCityModal from "@/components/travel/CreateCityModal.vue";
 import EditCityModal from "@/components/travel/EditCityModal.vue";

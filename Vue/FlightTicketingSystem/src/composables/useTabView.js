@@ -1,8 +1,8 @@
 import { computed } from "vue";
 import CityTable from "@/components/travel/CityTable.vue";
-import CityCardGrid from "@/components/CityCardGrid.vue";
+import CityCardGrid from "@/components/travel/CityCardGrid.vue";
 import AttractionTable from "@/components/travel/AttractionTable.vue";
-import AttractionCardGrid from "@/components/AttractionCardGrid.vue";
+import AttractionCardGrid from "@/components/travel/AttractionCardGrid.vue";
 
 export function useTabView(
   viewMode,
