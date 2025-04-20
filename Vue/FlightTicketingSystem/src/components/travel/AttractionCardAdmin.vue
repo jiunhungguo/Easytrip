@@ -41,7 +41,7 @@
     <!-- 按鈕（原本 actions 放回來） -->
     <v-card-actions class="justify-center">
       <v-btn color="primary" variant="outlined" @click="editDialog = true">
-        編輯
+        修改
       </v-btn>
       <v-btn
         color="error"

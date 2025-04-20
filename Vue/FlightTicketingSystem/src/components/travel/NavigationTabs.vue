@@ -2,7 +2,6 @@
   <div class="text-center my-6">
     <h1 class="text-4xl font-bold mb-4">請選擇操作</h1>
 
-    <!-- 根據選擇的 tab 顯示內容 -->
     <div v-if="modelValue === 'cities'">
       <p class="text-lg"><v-icon class="mb-2">mdi-city</v-icon>查詢城市</p>
     </div>
@@ -34,7 +33,6 @@
     </div>
   </div>
 
-  <!-- dropdowns -->
   <div class="flex justify-center gap-4 mb-6">
     <div class="dropdown-wrapper">
       <v-select
@@ -47,10 +45,8 @@
           actionIcons[selectedCategory][selectedAction] || 'mdi-cog'
         "
         dense
-        outlined
-      />
+        outlined />
     </div>
-    <!-- 類別下拉 -->
     <div class="dropdown-wrapper">
       <v-select
         v-model="selectedCategory"
@@ -60,8 +56,7 @@
         label="選擇類別"
         prepend-inner-icon="mdi-menu"
         dense
-        outlined
-      />
+        outlined />
     </div>
   </div>
 </template>
@@ -69,20 +64,16 @@
 <script setup>
 import { ref, watch } from "vue";
 
-// 🍬 Vue 3 的 defineModel 語法糖，取代 props + emits
-const modelValue = defineModel("selectedTab"); // 這就是 selectedTab 的 v-model
+const modelValue = defineModel("selectedTab");
 
-// 分類 + 動作的下拉選擇
 const selectedCategory = ref("cities");
 const selectedAction = ref("query");
 
-// 對應分類名稱
 const categories = [
   { label: "城市", value: "cities" },
   { label: "景點", value: "attractions" },
 ];
 
-// 每個分類下對應的操作
 const actions = {
   cities: [
     { label: "查詢", value: "query" },
@@ -96,21 +87,19 @@ const actions = {
   ],
 };
 
-// 下拉 icon
 const actionIcons = {
   cities: {
-    query: "mdi mdi-magnify",
-    add: "mdi mdi-map-marker-plus",
-    all: "mdi mdi-check-all",
+    query: "mdi mdi-playlist-edit",
+    add: "mdi mdi-playlist-edit",
+    all: "mdi mdi-playlist-edit",
   },
   attractions: {
-    query: "mdi mdi-magnify",
-    add: "mdi mdi-map-marker-plus",
-    all: "mdi mdi-check-all",
+    query: "mdi mdi-playlist-edit",
+    add: "mdi mdi-playlist-edit",
+    all: "mdi mdi-playlist-edit",
   },
 };
 
-// 對應操作與 tab 的 map
 const actionMap = {
   cities: {
     query: "cities",
@@ -124,7 +113,6 @@ const actionMap = {
   },
 };
 
-// 一有動作就更新 modelValue（v-model）
 watch([selectedCategory, selectedAction], () => {
   modelValue.value = actionMap[selectedCategory.value][selectedAction.value];
 });
@@ -136,7 +124,7 @@ watch([selectedCategory, selectedAction], () => {
 }
 
 .dropdown-wrapper {
-  max-width: 360px; /* 跟你搜索框差不多宽 */
+  max-width: 360px;
   width: 100%;
 }
 </style>
