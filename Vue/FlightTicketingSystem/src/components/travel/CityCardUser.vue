@@ -1,13 +1,27 @@
 <template>
   <div
-    class="rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-transform hover:scale-[1.03] w-[280px] bg-white">
+    class="rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-transform hover:scale-[1.03] w-[280px] bg-white relative"
+  >
     <!-- 圖片 -->
     <v-img
       :src="`http://localhost:8080${city.image}`"
       :alt="city.name"
       height="180"
       cover
-      class="rounded-t-xl" />
+      class="rounded-t-xl"
+    />
+    <button
+      @click="toggleFavorite(city)"
+      class="absolute top-2 right-2 w-8 h-8 flex items-center justify-center text-white bg-black/60 hover:bg-black/80 rounded-full transition transition-transform hover:scale-110"
+    >
+      <i
+        :class="[
+          'mdi',
+          isFavorite(city.id) ? 'mdi-heart' : 'mdi-heart-outline',
+        ]"
+        class="text-base"
+      ></i>
+    </button>
 
     <!-- 名稱/國家 -->
     <div class="p-4 text-center">
@@ -21,7 +35,8 @@
           color="primary"
           variant="outlined"
           size="small"
-          @click="travel.openAttractions(city)">
+          @click="travel.openAttractions(city)"
+        >
           <i class="mdi mdi-eye text-xl text-blue-600 hover:text-blue-800"></i>
           查看景點
         </v-btn>
@@ -30,9 +45,11 @@
           color="green"
           variant="outlined"
           size="small"
-          @click="travel.setDestination(city.name)">
+          @click="travel.setDestination(city.name)"
+        >
           <i
-            class="mdi mdi-airplane text-xl text-green-600 hover:text-green-800"></i>
+            class="mdi mdi-airplane text-xl text-green-600 hover:text-green-800"
+          ></i>
           設為目的地
         </v-btn>
       </div>
@@ -50,11 +67,13 @@
           <!-- Swiper 景點主輪播 -->
           <div class="relative">
             <div
-              class="absolute -left-10 top-1/2 -translate-y-1/2 z-50 swiper-custom-prev cursor-pointer">
+              class="absolute -left-10 top-1/2 -translate-y-1/2 z-50 swiper-custom-prev cursor-pointer"
+            >
               <v-icon size="32">mdi-chevron-left</v-icon>
             </div>
             <div
-              class="absolute -right-10 top-1/2 -translate-y-1/2 z-9999 swiper-custom-next cursor-pointer">
+              class="absolute -right-10 top-1/2 -translate-y-1/2 z-9999 swiper-custom-next cursor-pointer"
+            >
               <v-icon size="32">mdi-chevron-right</v-icon>
             </div>
             <swiper
@@ -67,13 +86,16 @@
                 prevEl: '.swiper-custom-prev',
               }"
               loop
-              class="rounded-lg">
+              class="rounded-lg"
+            >
               <swiper-slide
                 v-for="(attraction, index) in travel.currentCity.attractions"
-                :key="attraction.id || index">
+                :key="attraction.id || index"
+              >
                 <v-card
                   flat
-                  class="d-flex flex-column justify-between h-full px-6 py-4">
+                  class="d-flex flex-column justify-between h-full px-6 py-4"
+                >
                   <div>
                     <!-- 大圖 + 縮圖預覽 -->
                     <div class="mb-4">
@@ -81,18 +103,22 @@
                         :modules="[Thumbs]"
                         :thumbs="{ swiper: thumbs[index] }"
                         :slides-per-view="1"
-                        class="rounded mb-2">
+                        class="rounded mb-2"
+                      >
                         <swiper-slide
                           v-for="(photo, j) in attraction.photos"
-                          :key="photo.id">
+                          :key="photo.id"
+                        >
                           <v-img
                             :src="`http://localhost:8080${photo.url}`"
                             cover
                             class="rounded"
-                            height="250">
+                            height="250"
+                          >
                             <template #placeholder>
                               <div
-                                class="flex items-center justify-center h-full bg-gray-100">
+                                class="flex items-center justify-center h-full bg-gray-100"
+                              >
                                 載入中...
                               </div>
                             </template>
@@ -108,15 +134,18 @@
                         free-mode
                         watch-slides-progress
                         @swiper="(swiper) => (thumbs[index] = swiper)"
-                        class="rounded-sm">
+                        class="rounded-sm"
+                      >
                         <swiper-slide
                           v-for="(photo, j) in attraction.photos"
-                          :key="photo.id + '-thumb'">
+                          :key="photo.id + '-thumb'"
+                        >
                           <v-img
                             :src="`http://localhost:8080${photo.url}`"
                             height="60"
                             class="rounded-sm border border-gray-300"
-                            cover />
+                            cover
+                          />
                         </swiper-slide>
                       </swiper>
                     </div>
@@ -154,7 +183,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useTravelStore } from "@/stores/travelStore";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Pagination, Thumbs, FreeMode, Navigation } from "swiper/modules";
@@ -170,6 +199,47 @@ defineProps({
 
 const travel = useTravelStore();
 const thumbs = ref([]);
+
+const favoriteIds = ref(new Set()); // 或 new Set<number>() 根據你的資料型態
+
+const isFavorite = (cityId) => favoriteIds.value.has(cityId);
+
+const toggleFavorite = async (city) => {
+  const cityId = city.id;
+  const memberId = 1001;
+
+  if (!memberId) return alert("請先登入");
+
+  try {
+    if (isFavorite(cityId)) {
+      await axios.delete("/api/favorites", {
+        data: { memberId, cityId },
+      });
+      favoriteIds.value.delete(cityId);
+    } else {
+      await axios.post("/api/favorites", {
+        memberId,
+        cityId,
+      });
+      favoriteIds.value.add(cityId);
+    }
+  } catch (err) {
+    console.error("收藏操作失敗", err);
+  }
+};
+
+onMounted(async () => {
+  const memberId = travel.memberId;
+  if (!memberId) return;
+
+  try {
+    const res = await axios.get(`/api/favorites?memberId=${memberId}`);
+    const ids = res.data.map((fav) => fav.cityId);
+    favoriteIds.value = new Set(ids);
+  } catch (err) {
+    console.error("載入最愛失敗", err);
+  }
+});
 </script>
 
 <style>
