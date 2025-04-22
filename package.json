@@ -1,5 +1,28 @@
 {
   "dependencies": {
     "axios": "^1.8.4"
-  }
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.1.4"
+  },
+  "name": "easytrip",
+  "version": "1.0.0",
+  "description": "FlightTicketingSystem/\r     ├── src/\r     │   ├── main/\r     │   │   ├── java/                              # Java 程式碼目錄\r     │   │   │   └── com/\r     │   │   │       └── demo/                     # 加入 demo 層\r     │   │   │           ├── controller/          # 控制層\r     │   │   │           │   ├── FlightSearchController.java\r     │   │   │           │   ├── BookingController.java\r     │   │   │           │   └── UserController.java     \r     │   │   │           ├── service/             # 業務邏輯層（Service）\r     │   │   │           │    ├──UserService.java\r     │   │   │           │    └── spec/            # service的Interface檔案(規範查詢用)\r     │   │   │           │        └──IUser.java\r     │   │   │           ├── repository/          # 資料訪問層（Repository/DAO）\r     │   │   │           ├── model/               # 資料模型層（Model/Entity）\r     │   │   │           ├── config/              # 配置類\r     │   │   │           └── util/                # 工具類\r     │   │   ├── webapp/\r     │   │   │   ├── static/                      # 靜態資源（CSS、JS、圖片等）\r     │   │   │   │   ├── frontend/                # 前台靜態資源\r     │   │   │   │   │   ├── css/\r     │   │   │   │   │   ├── js/\r     │   │   │   │   │   └── images/\r     │   │   │   │   └── admin/                   # 後台靜態資源\r     │   │   │   │       ├── css/\r     │   │   │   │       ├── js/\r     │   │   │   │       └── images/\r     │   │   │   ├── templates/                   # HTML 模板\r     │   │   │   │   ├── frontend/                # 前台頁面模板\r     │   │   │   │   │   ├── index.html           # 首頁\r     │   │   │   │   │   ├── search.html          # 航班搜索頁面\r     │   │   │   │   │   ├── booking.html         # 訂票頁面\r     │   │   │   │   │   └── confirmation.html    # 訂票確認頁面\r     │   │   │   │   └── admin/                   # 後台頁面模板\r     │   │   │   │       ├── dashboard.html       # 後台儀表板\r     │   │   │   │       ├── manage-flights.html  # 航班管理頁面\r     │   │   │   │       ├── manage-bookings.html # 訂票管理頁面\r     │   │   │   │       └── manage-users.html    # 用戶管理頁面\r     │   ├── test/                                # 測試檔案\r     │   │   ├── java/\r     │   │   │   └── com/\r     │   │   │       └── demo/                    # 測試檔案與主程式保持一致\r     │   │   │           ├── controller/\r     │   │   │           ├── service/\r     │   │   │           └── repository/\r     │   └── README.md                            # 專案簡介\r     ├── pom.xml                                  # Maven 配置檔案\r     ├── Vue/                                     # VUE檔案存放處(詳細檔案結構看裡面的README.md)\r     └── .gitignore                               # Git 忽略規則",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jiunhungguo/Easytrip.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jiunhungguo/Easytrip/issues"
+  },
+  "homepage": "https://github.com/jiunhungguo/Easytrip#readme"
 }

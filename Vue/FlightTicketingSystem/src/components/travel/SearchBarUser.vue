@@ -1,15 +1,6 @@
 <template>
   <!-- Search bar -->
   <div class="flex justify-center items-center gap-4 mb-10">
-    <!-- <div
-        class="flex items-center bg-gray-100 px-4 py-3 rounded-full text-sm w-full max-w-2xl shadow-sm">
-        <span class="mr-2 mdi mdi-map-marker-outline text-gray-500"></span>
-        <input
-          v-model="modelValue"
-          type="text"
-          placeholder="請輸入城市、景點或地區名稱..."
-          class="bg-transparent outline-none w-full placeholder:text-gray-400" />
-      </div> -->
     <button
       @click="
         () => {
@@ -25,6 +16,7 @@
       @click="
         () => {
           travel.hideImage();
+          handleFavourite();
         }
       "
       class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-full transition duration-300 shadow-md"
@@ -46,6 +38,19 @@
 
   <div v-if="searchAllCities" class="mx-auto" style="padding-left: 7em">
     <CityCardGrid :cities="allCities" />
+  </div>
+
+  <div v-if="favourite">
+    <div
+      v-if="favouriteCities.length > 0"
+      class="mx-auto"
+      style="padding-left: 7em"
+    >
+      <CityCardGrid :cities="favouriteCities" />
+    </div>
+    <div v-else class="text-center text-gray-500 mt-10">
+      暫無收藏的城市，快去探索一下吧！
+    </div>
   </div>
 
   <div v-if="searchWithAI" class="p-6 max-w-xl mx-auto">
@@ -91,28 +96,46 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useCityStore } from "@/stores/cityStore";
-import { useAttractionStore } from "@/stores/attractionStore";
 import { useTravelStore } from "@/stores/travelStore";
+import { useFavouriteStore } from "@/stores/favourtieStore";
 import CityCardGrid from "./CityCardGridUser.vue";
 import axios from "axios";
 
 const cityStore = useCityStore();
 const travel = useTravelStore();
+const favouriteStore = useFavouriteStore();
 
 const allCities = ref([]);
 const searchAllCities = ref(false);
 const searchWithAI = ref(false);
+const favourite = ref(false);
+
+const favouriteCities = computed(() => {
+  const cityMap = new Map(cityStore.cities.map((city) => [city.id, city]));
+  return favouriteStore.allFavourites
+    .map((fav) => cityMap.get(fav.cityId))
+    .filter((city) => city);
+});
 
 const handleSearch = () => {
   searchAllCities.value = true;
   searchWithAI.value = false;
+  favourite.value = false;
 };
 
 const handleAISearch = () => {
   searchWithAI.value = true;
   searchAllCities.value = false;
+  favourite.value = false;
+};
+
+const handleFavourite = async () => {
+  favourite.value = true;
+  searchAllCities.value = false;
+  searchWithAI.value = false;
+  await favouriteStore.loadFavourites();
 };
 
 const userPrompt = ref("");
@@ -137,7 +160,7 @@ const getRecommendation = async () => {
           {
             role: "system",
             content:
-              '你是一位旅遊推薦助手，請根據使用者的需求推薦 5 個城市，使用 JSON 格式回應，例如 [{"name": "台北", "attractions": "台北101，士林夜市，故宮博物院，象山，台北動物園"}]',
+              '你是一位旅遊推薦助手，請根據使用者的需求推薦 5 個城市，必須使用 JSON 格式回應，例如 [{"name": "台北", "attractions": "台北101，士林夜市，故宮博物院，象山，台北動物園"}]',
           },
           {
             role: "user",
@@ -147,7 +170,7 @@ const getRecommendation = async () => {
       },
       {
         headers: {
-          Authorization: `Bearer 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`,
+          Authorization: `Bearer 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`,
           "HTTP-Referer": "http://localhost:5173",
         },
       }

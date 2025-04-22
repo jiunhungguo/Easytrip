@@ -14,7 +14,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "favorites")
+@Table(name = "favourites")
 @Getter
 @Setter
 public class Favourite {
@@ -26,8 +26,8 @@ public class Favourite {
     @Column(name = "member_id", nullable = false)
     private Integer memberId;
 
-    @Column(name = "attraction_id", nullable = false)
-    private Integer attractionId;
+    @Column(name = "city_id", nullable = false)
+    private Integer cityId;
 
     @Column(name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)

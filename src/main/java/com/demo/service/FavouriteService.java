@@ -3,9 +3,11 @@ package com.demo.service;
 import com.demo.dto.CreateFavouriteRequest;
 import com.demo.dto.FavouriteResponse;
 
+import java.util.List;
+
 public interface FavouriteService {
 
-    FavouriteResponse getFavouriteByMemberId(Integer memberId);
+    List<FavouriteResponse> getFavouriteByMemberId(Integer memberId);
 
     FavouriteResponse createFavourite(CreateFavouriteRequest request);
 

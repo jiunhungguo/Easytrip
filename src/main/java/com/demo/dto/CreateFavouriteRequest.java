@@ -1,4 +1,4 @@
-package com.demo.model;
+package com.demo.dto;
 
 import java.util.Date;
 
@@ -11,6 +11,6 @@ public class CreateFavouriteRequest {
 
     private Long id;
     private Integer memberId;
-    private Integer attractionId;
+    private Integer cityId;
     private Date createdAt;
 }

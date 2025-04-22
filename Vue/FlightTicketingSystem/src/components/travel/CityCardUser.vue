@@ -11,15 +11,17 @@
       class="rounded-t-xl"
     />
     <button
-      @click="toggleFavorite(city)"
+      @click="toggle(city)"
       class="absolute top-2 right-2 w-8 h-8 flex items-center justify-center text-white bg-black/60 hover:bg-black/80 rounded-full transition transition-transform hover:scale-110"
     >
       <i
         :class="[
           'mdi',
-          isFavorite(city.id) ? 'mdi-heart' : 'mdi-heart-outline',
+          isFavourite(city.id)
+            ? 'mdi-heart text-red-500'
+            : 'mdi-heart-outline text-gray-400',
+          'text-base cursor-pointer',
         ]"
-        class="text-base"
       ></i>
     </button>
 
@@ -185,6 +187,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useTravelStore } from "@/stores/travelStore";
+import { useFavouriteStore } from "@/stores/favourtieStore";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Pagination, Thumbs, FreeMode, Navigation } from "swiper/modules";
 import "swiper/css";
@@ -198,47 +201,14 @@ defineProps({
 });
 
 const travel = useTravelStore();
+const favourite = useFavouriteStore();
 const thumbs = ref([]);
 
-const favoriteIds = ref(new Set()); // 或 new Set<number>() 根據你的資料型態
-
-const isFavorite = (cityId) => favoriteIds.value.has(cityId);
-
-const toggleFavorite = async (city) => {
-  const cityId = city.id;
-  const memberId = 1001;
-
-  if (!memberId) return alert("請先登入");
-
-  try {
-    if (isFavorite(cityId)) {
-      await axios.delete("/api/favorites", {
-        data: { memberId, cityId },
-      });
-      favoriteIds.value.delete(cityId);
-    } else {
-      await axios.post("/api/favorites", {
-        memberId,
-        cityId,
-      });
-      favoriteIds.value.add(cityId);
-    }
-  } catch (err) {
-    console.error("收藏操作失敗", err);
-  }
-};
+const toggle = (city) => favourite.toggle(city);
+const isFavourite = (id) => favourite.isFavourite(id);
 
 onMounted(async () => {
-  const memberId = travel.memberId;
-  if (!memberId) return;
-
-  try {
-    const res = await axios.get(`/api/favorites?memberId=${memberId}`);
-    const ids = res.data.map((fav) => fav.cityId);
-    favoriteIds.value = new Set(ids);
-  } catch (err) {
-    console.error("載入最愛失敗", err);
-  }
+  favourite.loadFavourites();
 });
 </script>
 

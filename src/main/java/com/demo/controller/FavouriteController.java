@@ -1,5 +1,6 @@
 package com.demo.controller;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +13,8 @@ import com.demo.dto.CreateFavouriteRequest;
 import com.demo.dto.FavouriteResponse;
 import com.demo.service.FavouriteService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/favourites")
 public class FavouriteController {
@@ -23,18 +26,17 @@ public class FavouriteController {
     }
 
     @GetMapping("/member/{memberId}")
-    public FavouriteResponse getFavouriteByMemberId(@PathVariable Integer memberId) {
-        return favouriteService.getFavouriteByMemberId(memberId);
+    public ResponseEntity<List<FavouriteResponse>> getFavouriteByMemberId(@PathVariable Integer memberId) {
+        return ResponseEntity.ok(favouriteService.getFavouriteByMemberId(memberId));
     }
 
     @PostMapping
-    public FavouriteResponse createFavourite(@RequestBody CreateFavouriteRequest request) {
-        return favouriteService.createFavourite(request);
+    public ResponseEntity<FavouriteResponse> createFavourite(@RequestBody CreateFavouriteRequest request) {
+        return ResponseEntity.ok(favouriteService.createFavourite(request));
     }
 
     @DeleteMapping("/{id}")
-    public void deleteFavourite(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteFavourite(@PathVariable Long id) {
         favouriteService.deleteFavourite(id);
-    }
-
+        return ResponseEntity.noContent().build();}
 }

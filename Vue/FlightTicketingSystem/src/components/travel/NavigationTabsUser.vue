@@ -108,7 +108,7 @@
 
   <!-- Explore -->
   <div v-show="selectedTab === '發現更多目的地'">
-    <SearchBarUser v-model="searchQuery" :key="searchKey" />
+    <SearchBarUser />
   </div>
 </template>
 
@@ -125,13 +125,12 @@ const selectedTab = computed({
   get: () => travel.selectedTab,
   set: (val) => (travel.selectedTab = val),
 });
-const searchKey = ref(0);
+
 const switchTab = (tab) => {
   selectedTab.value = tab.name;
 
   if (tab.name === "發現更多目的地") {
     searchQuery.value = "";
-    searchKey.value++;
   }
 
   travel.resetImage();
