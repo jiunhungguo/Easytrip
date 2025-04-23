@@ -2,45 +2,36 @@
   <!-- Search bar -->
   <div class="flex justify-center items-center gap-4 mb-10">
     <button
-      @click="
-        () => {
-          travel.hideImage();
-          handleAISearch();
-        }
-      "
+      @click="setMode('AI')"
       class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-full transition duration-300 shadow-md"
     >
       智能推薦
     </button>
     <button
-      @click="
-        () => {
-          travel.hideImage();
-          handleFavourite();
-        }
-      "
+      @click="setMode('Favourite')"
       class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-full transition duration-300 shadow-md"
     >
       我的最愛
     </button>
     <button
-      @click="
-        () => {
-          travel.hideImage();
-          handleSearch();
-        }
-      "
+      @click="setMode('All')"
       class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-full transition duration-300 shadow-md"
     >
       所有城市
     </button>
+    <button
+      @click="setMode('Calendar')"
+      class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-full transition duration-300 shadow-md"
+    >
+      行程計劃
+    </button>
   </div>
 
-  <div v-if="searchAllCities" class="mx-auto" style="padding-left: 7em">
+  <div v-if="currentMode === 'All'" class="mx-auto" style="padding-left: 7em">
     <CityCardGrid :cities="allCities" />
   </div>
 
-  <div v-if="favourite">
+  <div v-if="currentMode === 'Favourite'">
     <div
       v-if="favouriteCities.length > 0"
       class="mx-auto"
@@ -53,7 +44,7 @@
     </div>
   </div>
 
-  <div v-if="searchWithAI" class="p-6 max-w-xl mx-auto">
+  <div v-if="currentMode === 'AI'" class="p-6 max-w-xl mx-auto">
     <h2 class="text-xl font-bold mb-4">智能推薦景點</h2>
 
     <textarea
@@ -93,24 +84,26 @@
       </div>
     </div>
   </div>
+  <div v-if="currentMode === 'Calendar'">
+    <FullCalendarBasic />
+  </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watchEffect, nextTick } from "vue";
 import { useCityStore } from "@/stores/cityStore";
 import { useTravelStore } from "@/stores/travelStore";
 import { useFavouriteStore } from "@/stores/favourtieStore";
 import CityCardGrid from "./CityCardGridUser.vue";
 import axios from "axios";
+import FullCalendarBasic from "@/components/travel/BasicCalendar.vue";
 
 const cityStore = useCityStore();
 const travel = useTravelStore();
 const favouriteStore = useFavouriteStore();
 
 const allCities = ref([]);
-const searchAllCities = ref(false);
-const searchWithAI = ref(false);
-const favourite = ref(false);
+const currentMode = ref("");
 
 const favouriteCities = computed(() => {
   const cityMap = new Map(cityStore.cities.map((city) => [city.id, city]));
@@ -119,23 +112,13 @@ const favouriteCities = computed(() => {
     .filter((city) => city);
 });
 
-const handleSearch = () => {
-  searchAllCities.value = true;
-  searchWithAI.value = false;
-  favourite.value = false;
-};
+const setMode = async (mode) => {
+  travel.hideImage();
+  currentMode.value = mode;
 
-const handleAISearch = () => {
-  searchWithAI.value = true;
-  searchAllCities.value = false;
-  favourite.value = false;
-};
-
-const handleFavourite = async () => {
-  favourite.value = true;
-  searchAllCities.value = false;
-  searchWithAI.value = false;
-  await favouriteStore.loadFavourites();
+  if (mode === "Favourite") {
+    await favouriteStore.loadFavourites();
+  }
 };
 
 const userPrompt = ref("");
@@ -170,7 +153,7 @@ const getRecommendation = async () => {
       },
       {
         headers: {
-          Authorization: `Bearer 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`,
+          Authorization: `Bearer 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`,
           "HTTP-Referer": "http://localhost:5173",
         },
       }
@@ -202,3 +185,4 @@ onMounted(async () => {
   allCities.value = cityStore.cities;
 });
 </script>
+<style scoped></style>

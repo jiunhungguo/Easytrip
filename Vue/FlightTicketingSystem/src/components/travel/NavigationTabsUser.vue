@@ -108,7 +108,7 @@
 
   <!-- Explore -->
   <div v-show="selectedTab === '發現更多目的地'">
-    <SearchBarUser />
+    <SearchBarUser @exit-mode="handleExitMode" />
   </div>
 </template>
 
@@ -128,11 +128,7 @@ const selectedTab = computed({
 
 const switchTab = (tab) => {
   selectedTab.value = tab.name;
-
-  if (tab.name === "發現更多目的地") {
-    searchQuery.value = "";
-  }
-
+  emit("exitMode");
   travel.resetImage();
 };
 
@@ -141,6 +137,10 @@ const tabs = [
   { name: "禮品", icon: "mdi-gift" },
   { name: "發現更多目的地", icon: "mdi-map-marker-radius" },
 ];
+
+const handleExitMode = () => {
+  // 你可以留空，或者加一些 log
+};
 
 onMounted(() => {
   flatpickr(dateInput.value, {
