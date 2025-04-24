@@ -9,108 +9,107 @@
       :options="calendarOptions"
       ref="calendarRef" />
   </div>
+  <v-dialog v-model="dialog" max-width="500">
+    <v-card>
+      <v-card-title class="text-h6">新增行程</v-card-title>
+      <v-card-text>
+        <v-select
+          label="選擇城市"
+          :items="cities.map((c) => c.name)"
+          v-model="selectedCity"
+          @change="updateSpots"
+          :rules="[required]" />
+        <v-select
+          label="選擇景點"
+          :items="filteredSpots"
+          item-title="name"
+          v-model="selectedSpot"
+          :rules="[required]" />
+        <v-text-field
+          label="開始時間"
+          v-model="startTime"
+          type="datetime-local"
+          :rules="[required]" />
+        <v-text-field
+          label="結束時間"
+          v-model="endTime"
+          type="datetime-local"
+          :rules="[required]" />
+      </v-card-text>
+      <v-card-actions class="justify-end">
+        <v-btn variant="outlined" @click="dialog = false">取消</v-btn>
+        <v-btn color="primary" variant="flat" @click="saveEvent">新增</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
 import { ref, onMounted, nextTick, computed } from "vue";
 import FullCalendar from "@fullcalendar/vue3";
-import Swal from "sweetalert2";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { useCalendarStore } from "@/stores/calendarStore";
 import { useCityStore } from "@/stores/cityStore";
-
-const calendar = useCalendarStore();
+import { useToast } from "vue-toastification";
+const toast = useToast();
 const cityStore = useCityStore();
+const calendarRef = ref(null);
 
-const select = async (info) => {
-  const cityOptions = cityStore.cities.reduce((obj, city) => {
-    obj[city.id] = city.name;
-    return obj;
-  }, {});
+const dialog = ref(false);
+const selectedCity = ref("");
+const selectedSpot = ref("");
+const startTime = ref("");
+const endTime = ref("");
 
-  const { value: cityId } = await Swal.fire({
-    title: "選擇城市",
-    input: "select",
-    inputOptions: cityOptions,
-    inputPlaceholder: "請選擇城市",
-    showCancelButton: true,
-  });
+const cities = computed(() => cityStore.cities);
+const filteredSpots = computed(() => {
+  return cities.value.find((c) => c.name === selectedCity.value)?.spots || [];
+});
 
-  if (!cityId) return;
+const required = (v) => !!v || "必填";
 
-  const selectedCity = cityStore.cities.find((c) => c.id == cityId);
-  if (!selectedCity || !selectedCity.spots.length) {
-    Swal.fire("錯誤", "此城市沒有景點！", "error");
-    return;
-  }
-
-  const spotOptions = selectedCity.spots.reduce((obj, spot) => {
-    obj[spot.id] = spot.name;
-    return obj;
-  }, {});
-
-  const { value: spotId } = await Swal.fire({
-    title: "選擇景點",
-    input: "select",
-    inputOptions: spotOptions,
-    inputPlaceholder: "請選擇景點",
-    showCancelButton: true,
-  });
-
-  if (!spotId) return;
-
-  const selectedSpot = selectedCity.spots.find((s) => s.id == spotId);
-
-  calendar.addEvent({
-    title: `${selectedCity.name}：${selectedSpot.name}`,
-    start: info.startStr,
-    end: info.endStr,
-  });
-
-  Swal.fire("新增成功", `${selectedSpot.name} 已加入行程`, "success");
+const updateSpots = () => {
+  selectedSpot.value = "";
 };
 
-const calendarOptions = ref({
+const saveEvent = () => {
+  if (!selectedCity.value || !selectedSpot.value || !startTime.value) return;
+
+  calendarRef.value.getApi().addEvent({
+    title: `${selectedCity.value} - ${selectedSpot.value}`,
+    start: startTime.value,
+    end: endTime.value,
+    color: "#3B82F6",
+  });
+  dialog.value = false;
+  toast.success("行程已新增 ✅");
+};
+
+const calendarOptions = {
   plugins: [dayGridPlugin, interactionPlugin],
-  locale: "zh-tw", // 語系換成繁體中文
-  firstDay: 1, // 從星期一開始
-  initialView: "dayGridMonth",
-  editable: true,
-  selectable: true,
-  events: computed(() => calendar.events),
-
-  customButtons: {
-    today: {
-      text: "今日",
-    },
-  },
-
-  buttonText: {
-    prev: "<",
-    next: ">",
-  },
-
   headerToolbar: {
     left: "prev,next today",
     center: "title",
     right: "",
   },
-
-  select: select, // 你的 callback
-});
-
-const calendarRef = ref(null);
-
-onMounted(async () => {
-  await nextTick();
-  setTimeout(() => {
-    const calendarApi = calendarRef.value.getApi?.();
-    if (calendarApi) {
-      calendarApi.updateSize();
-    }
-  }, 100); // 延遲一點，給 DOM 一口氣喘
-});
+  buttonText: {
+    today: "今日",
+    prev: "<",
+    next: ">",
+  },
+  initialView: "dayGridMonth",
+  locale: "zh-tw",
+  firstDay: 1,
+  selectable: true,
+  editable: true,
+  events: [],
+  select: (info) => {
+    dialog.value = true;
+    startTime.value = info.startStr;
+    endTime.value = info.endStr;
+  },
+};
 </script>
 
 <style scoped>
@@ -152,5 +151,17 @@ onMounted(async () => {
 }
 :deep(.fc .fc-button-group > .fc-button:last-child) {
   border-left: 1px solid white;
+}
+.swal-confirm-btn,
+.swal-cancel-btn {
+  color: white !important;
+}
+
+.swal-confirm-btn {
+  background-color: #3b82f6 !important; /* blue-500 */
+}
+
+.swal-cancel-btn {
+  background-color: #9ca3af !important; /* gray-400 */
 }
 </style>
