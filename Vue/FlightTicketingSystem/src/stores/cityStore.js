@@ -13,7 +13,30 @@ export const useCityStore = defineStore("city", {
         const res = await axios.get("http://localhost:8080/cities", {
           params: { page, size },
         });
-        this.cities = res.data.content;
+
+        const cities = res.data.content;
+
+        const enrichedCities = await Promise.all(
+          cities.map(async (city) => {
+            try {
+              const spotRes = await axios.get(
+                `http://localhost:8080/attractions/city/${city.id}`
+              );
+              return {
+                ...city,
+                spots: spotRes.data,
+              };
+            } catch (e) {
+              console.warn(`景點載入失敗：${city.name}`, e);
+              return {
+                ...city,
+                spots: [],
+              };
+            }
+          })
+        );
+
+        this.cities = enrichedCities;
       } catch (err) {
         console.error("載入城市失敗", err);
       } finally {

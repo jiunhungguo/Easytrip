@@ -3,26 +3,22 @@
   <div class="flex justify-center items-center gap-4 mb-10">
     <button
       @click="setMode('AI')"
-      class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-full transition duration-300 shadow-md"
-    >
+      class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-full transition duration-300 shadow-md">
       智能推薦
     </button>
     <button
       @click="setMode('Favourite')"
-      class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-full transition duration-300 shadow-md"
-    >
+      class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-full transition duration-300 shadow-md">
       我的最愛
     </button>
     <button
       @click="setMode('All')"
-      class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-full transition duration-300 shadow-md"
-    >
+      class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-full transition duration-300 shadow-md">
       所有城市
     </button>
     <button
       @click="setMode('Calendar')"
-      class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-full transition duration-300 shadow-md"
-    >
+      class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-full transition duration-300 shadow-md">
       行程計劃
     </button>
   </div>
@@ -35,8 +31,7 @@
     <div
       v-if="favouriteCities.length > 0"
       class="mx-auto"
-      style="padding-left: 7em"
-    >
+      style="padding-left: 7em">
       <CityCardGrid :cities="favouriteCities" />
     </div>
     <div v-else class="text-center text-gray-500 mt-10">
@@ -51,14 +46,12 @@
       v-model="userPrompt"
       rows="4"
       placeholder="請輸入您的需求"
-      class="w-full p-3 border border-gray-300 rounded mb-4 resize-none"
-    ></textarea>
+      class="w-full p-3 border border-gray-300 rounded mb-4 resize-none"></textarea>
 
     <button
       @click="getRecommendation"
       :disabled="loading || !userPrompt"
-      class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded disabled:opacity-50 transition"
-    >
+      class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded disabled:opacity-50 transition">
       {{ loading ? "正在思考中..." : "智能推薦" }}
     </button>
 
@@ -67,8 +60,7 @@
       <div
         v-for="(item, index) in recommendation"
         :key="index"
-        class="p-4 border border-gray-200 rounded shadow-sm"
-      >
+        class="p-4 border border-gray-200 rounded shadow-sm">
         <p class="font-bold">{{ item.name }}</p>
         <p class="text-sm text-gray-600">{{ item.attractions }}</p>
         <div class="flex justify-end mt-4">
@@ -76,8 +68,7 @@
             size="small"
             color="blue"
             variant="outlined"
-            @click="bookCity(item.name)"
-          >
+            @click="bookCity(item.name)">
             <i class="mdi mdi-airplane mr-2"></i> 設為目的地
           </v-btn>
         </div>
@@ -85,18 +76,18 @@
     </div>
   </div>
   <div v-if="currentMode === 'Calendar'">
-    <FullCalendarBasic />
+    <FullCalendar />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watchEffect, nextTick } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useCityStore } from "@/stores/cityStore";
 import { useTravelStore } from "@/stores/travelStore";
 import { useFavouriteStore } from "@/stores/favourtieStore";
 import CityCardGrid from "./CityCardGridUser.vue";
 import axios from "axios";
-import FullCalendarBasic from "@/components/travel/BasicCalendar.vue";
+import FullCalendar from "@/components/travel/BasicCalendar.vue";
 
 const cityStore = useCityStore();
 const travel = useTravelStore();
@@ -183,6 +174,11 @@ const getRecommendation = async () => {
 onMounted(async () => {
   await cityStore.fetchCities();
   allCities.value = cityStore.cities;
+});
+
+onUnmounted(() => {
+  currentMode.value = "";
+  travel.resetImage();
 });
 </script>
 <style scoped></style>

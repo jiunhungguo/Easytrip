@@ -7,58 +7,97 @@
     <FullCalendar
       class="custom-calendar"
       :options="calendarOptions"
-      ref="calendarRef"
-    />
+      ref="calendarRef" />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from "vue";
+import { ref, onMounted, nextTick, computed } from "vue";
 import FullCalendar from "@fullcalendar/vue3";
+import Swal from "sweetalert2";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
+import { useCalendarStore } from "@/stores/calendarStore";
+import { useCityStore } from "@/stores/cityStore";
+
+const calendar = useCalendarStore();
+const cityStore = useCityStore();
+
+const select = async (info) => {
+  const cityOptions = cityStore.cities.reduce((obj, city) => {
+    obj[city.id] = city.name;
+    return obj;
+  }, {});
+
+  const { value: cityId } = await Swal.fire({
+    title: "選擇城市",
+    input: "select",
+    inputOptions: cityOptions,
+    inputPlaceholder: "請選擇城市",
+    showCancelButton: true,
+  });
+
+  if (!cityId) return;
+
+  const selectedCity = cityStore.cities.find((c) => c.id == cityId);
+  if (!selectedCity || !selectedCity.spots.length) {
+    Swal.fire("錯誤", "此城市沒有景點！", "error");
+    return;
+  }
+
+  const spotOptions = selectedCity.spots.reduce((obj, spot) => {
+    obj[spot.id] = spot.name;
+    return obj;
+  }, {});
+
+  const { value: spotId } = await Swal.fire({
+    title: "選擇景點",
+    input: "select",
+    inputOptions: spotOptions,
+    inputPlaceholder: "請選擇景點",
+    showCancelButton: true,
+  });
+
+  if (!spotId) return;
+
+  const selectedSpot = selectedCity.spots.find((s) => s.id == spotId);
+
+  calendar.addEvent({
+    title: `${selectedCity.name}：${selectedSpot.name}`,
+    start: info.startStr,
+    end: info.endStr,
+  });
+
+  Swal.fire("新增成功", `${selectedSpot.name} 已加入行程`, "success");
+};
 
 const calendarOptions = ref({
   plugins: [dayGridPlugin, interactionPlugin],
-  headerToolbar: {
-    start: "prev,next",
-    center: "",
-    end: "today",
-  },
+  locale: "zh-tw", // 語系換成繁體中文
+  firstDay: 1, // 從星期一開始
+  initialView: "dayGridMonth",
+  editable: true,
+  selectable: true,
+  events: computed(() => calendar.events),
+
   customButtons: {
     today: {
       text: "今日",
     },
   },
+
   buttonText: {
     prev: "<",
     next: ">",
   },
-  initialView: "dayGridMonth",
-  locale: "zh-tw", // 語系換成繁體中文
-  firstDay: 1,
+
   headerToolbar: {
     left: "prev,next today",
     center: "title",
     right: "",
   },
-  selectable: true,
-  editable: true,
-  events: [
-    {
-      title: "🛫 出發台北",
-      start: "2025-04-25",
-      color: "#34D399",
-    },
-    {
-      title: "🎢 台中玩耍",
-      start: "2025-04-27",
-      color: "#60A5FA",
-    },
-  ],
-  eventClick(info) {
-    alert(`你點到了：${info.event.title}`);
-  },
+
+  select: select, // 你的 callback
 });
 
 const calendarRef = ref(null);

@@ -1,19 +1,16 @@
 <template>
   <div
     v-if="travel.showImage"
-    class="relative w-[67%] mx-auto rounded-3xl overflow-hidden shadow-lg"
-  >
+    class="relative w-[67%] mx-auto rounded-3xl overflow-hidden shadow-lg">
     <img
       src="@/assets/ArcticTern.webp"
       alt="Dreamy travel background"
-      class="w-full h-full object-cover"
-    />
+      class="w-full h-full object-cover" />
 
     <!-- Text -->
     <div class="absolute inset-0 flex mt-12 justify-start">
       <h1
-        class="text-white text-4xl md:text-6xl font-semibold drop-shadow-md px-4 text-left pl-12 font-montserrat"
-      >
+        class="text-white text-4xl md:text-6xl font-semibold drop-shadow-md px-4 text-left pl-12 font-montserrat">
         You are one step away from<br />
         your dream trip
       </h1>
@@ -26,7 +23,6 @@ import { ref } from "vue";
 import { useTravelStore } from "@/stores/travelStore";
 
 const travel = useTravelStore();
-const showImage = ref(true);
 </script>
 
 <style scoped>
