@@ -30,14 +30,3 @@ app.use(vuetify); // 使用 Vuetify
 app.mount("#app");
 
 import "./assets/tailwind.css";
-
-import Toast from "vue-toastification";
-import "vue-toastification/dist/index.css";
-
-app.use(Toast, {
-  timeout: 2000,
-  closeOnClick: true,
-  pauseOnHover: true,
-  draggable: true,
-  transition: "Vue-Toastification__fade",
-});

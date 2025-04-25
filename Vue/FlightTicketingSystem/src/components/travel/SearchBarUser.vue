@@ -1,37 +1,33 @@
 <template>
   <!-- Search bar -->
   <div class="flex justify-center items-center gap-4 mb-10">
-    <button
-      @click="setMode('AI')"
-      class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-full transition duration-300 shadow-md">
-      智能推薦
-    </button>
-    <button
-      @click="setMode('Favourite')"
-      class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-full transition duration-300 shadow-md">
-      我的最愛
-    </button>
-    <button
-      @click="setMode('All')"
-      class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-full transition duration-300 shadow-md">
-      所有城市
-    </button>
-    <button
-      @click="setMode('Calendar')"
-      class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-full transition duration-300 shadow-md">
-      行程計劃
-    </button>
+    <div class="flex flex-wrap gap-3 mt-4">
+      <button
+        v-for="mode in modes"
+        :key="mode.value"
+        @click="setMode(mode.value)"
+        :class="[
+          baseBtnClass,
+          activeMode === mode.value
+            ? 'bg-blue-500 text-white border-blue-500'
+            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100 active:bg-gray-200',
+        ]"
+      >
+        {{ mode.label }}
+      </button>
+    </div>
   </div>
 
-  <div v-if="currentMode === 'All'" class="mx-auto" style="padding-left: 7em">
+  <div v-if="activeMode === 'All'" class="mx-auto" style="padding-left: 7em">
     <CityCardGrid :cities="allCities" />
   </div>
 
-  <div v-if="currentMode === 'Favourite'">
+  <div v-if="activeMode === 'Favourite'">
     <div
       v-if="favouriteCities.length > 0"
       class="mx-auto"
-      style="padding-left: 7em">
+      style="padding-left: 7em"
+    >
       <CityCardGrid :cities="favouriteCities" />
     </div>
     <div v-else class="text-center text-gray-500 mt-10">
@@ -39,19 +35,21 @@
     </div>
   </div>
 
-  <div v-if="currentMode === 'AI'" class="p-6 max-w-xl mx-auto">
+  <div v-if="activeMode === 'AI'" class="p-6 max-w-xl mx-auto">
     <h2 class="text-xl font-bold mb-4">智能推薦景點</h2>
 
     <textarea
       v-model="userPrompt"
       rows="4"
       placeholder="請輸入您的需求"
-      class="w-full p-3 border border-gray-300 rounded mb-4 resize-none"></textarea>
+      class="w-full p-3 border border-gray-300 rounded mb-4 resize-none"
+    ></textarea>
 
     <button
       @click="getRecommendation"
       :disabled="loading || !userPrompt"
-      class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded disabled:opacity-50 transition">
+      class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded disabled:opacity-50 transition"
+    >
       {{ loading ? "正在思考中..." : "智能推薦" }}
     </button>
 
@@ -60,7 +58,8 @@
       <div
         v-for="(item, index) in recommendation"
         :key="index"
-        class="p-4 border border-gray-200 rounded shadow-sm">
+        class="p-4 border border-gray-200 rounded shadow-sm"
+      >
         <p class="font-bold">{{ item.name }}</p>
         <p class="text-sm text-gray-600">{{ item.attractions }}</p>
         <div class="flex justify-end mt-4">
@@ -68,14 +67,15 @@
             size="small"
             color="blue"
             variant="outlined"
-            @click="bookCity(item.name)">
+            @click="bookCity(item.name)"
+          >
             <i class="mdi mdi-airplane mr-2"></i> 設為目的地
           </v-btn>
         </div>
       </div>
     </div>
   </div>
-  <div v-if="currentMode === 'Calendar'">
+  <div v-if="activeMode === 'Calendar'">
     <FullCalendar />
   </div>
 </template>
@@ -89,12 +89,22 @@ import CityCardGrid from "./CityCardGridUser.vue";
 import axios from "axios";
 import FullCalendar from "@/components/travel/BasicCalendar.vue";
 
+const baseBtnClass =
+  "px-4 py-2 min-w-[96px] rounded-lg border font-medium text-sm transition duration-150 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
+
+const modes = [
+  { value: "AI", label: "智能推薦" },
+  { value: "Favourite", label: "我的最愛" },
+  { value: "All", label: "所有城市" },
+  { value: "Calendar", label: "行程計劃" },
+];
+
 const cityStore = useCityStore();
 const travel = useTravelStore();
 const favouriteStore = useFavouriteStore();
 
 const allCities = ref([]);
-const currentMode = ref("");
+const activeMode = ref("");
 
 const favouriteCities = computed(() => {
   const cityMap = new Map(cityStore.cities.map((city) => [city.id, city]));
@@ -105,7 +115,7 @@ const favouriteCities = computed(() => {
 
 const setMode = async (mode) => {
   travel.hideImage();
-  currentMode.value = mode;
+  activeMode.value = mode;
 
   if (mode === "Favourite") {
     await favouriteStore.loadFavourites();
@@ -177,7 +187,7 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-  currentMode.value = "";
+  activeMode.value = "";
   travel.resetImage();
 });
 </script>
