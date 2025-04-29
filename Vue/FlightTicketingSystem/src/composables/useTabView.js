@@ -29,8 +29,8 @@ export function useTabView({
       return {
         cities: searchResults.value,
         headers: headers.city,
-        onEdit: handlers.edit,
-        onDelete: handlers.delete,
+        handleEdit: handlers.edit,
+        handleDelete: handlers.delete,
       };
     }
     if (["allCities"].includes(tab)) {
@@ -55,8 +55,8 @@ export function useTabView({
         attractions: attractionStore.attractions,
         cities: cityStore.cities,
         headers: headers.attraction,
-        onEdit: handlers.edit,
-        onDelete: handlers.delete,
+        handleEdit: handlers.edit,
+        handleDelete: handlers.delete,
       };
     }
     return {};

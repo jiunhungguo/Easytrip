@@ -42,6 +42,4 @@ const props = defineProps({
   handleEdit: Function,
   handleDelete: Function,
 });
-
-const { city, handleEdit, handleDelete } = props;
 </script>

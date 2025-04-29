@@ -16,12 +16,15 @@
               <v-img :src="photo.url" height="180" cover />
             </v-carousel-item>
           </v-carousel>
+
           <v-text-field v-model="form.name" label="名稱" :rules="[required]" />
           <v-select
             v-model="form.cityName"
-            :items="cities.map((c) => c.name)"
+            :items="localCities.map((c) => c.name)"
             label="所屬城市"
-            :rules="[required]" />
+            :rules="[required]"
+            :loading="cityLoading"
+            no-data-text="目前沒有可選城市" />
           <v-text-field
             v-model="form.address"
             label="地址"
@@ -33,16 +36,14 @@
             label="評分"
             type="number"
             :rules="[required, ratingRule]" />
-
           <v-combobox
             v-model="form.category"
             label="分類"
             multiple
             chips
             deletable-chips
-            hint="用逗號分隔或手動新增"
+            hint="可多選"
             persistent-hint />
-
           <v-text-field
             v-model.number="form.latitude"
             label="緯度"
@@ -55,11 +56,11 @@
             :rules="[required, number]" />
 
           <v-file-input
+            v-model="form.imageFiles"
             label="圖片（可多選）"
             accept="image/*"
             prepend-icon=""
             prepend-inner-icon="mdi-camera"
-            v-model="form.imageFiles"
             multiple
             show-size
             @change="previewImages" />
@@ -87,26 +88,24 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from "vue";
+import { ref, reactive, watch, onMounted } from "vue";
 import axios from "axios";
+import { useCityStore } from "@/stores/cityStore";
 
 const props = defineProps({
   modelValue: Boolean,
-  cities: Array,
 });
 const emit = defineEmits(["update:modelValue", "created"]);
 
 const model = ref(props.modelValue);
-watch(
-  () => props.modelValue,
-  (val) => (model.value = val)
-);
-watch(model, (val) => emit("update:modelValue", val));
-
 const valid = ref(false);
 const loading = ref(false);
-const formRef = ref(null);
 const photos = ref([]);
+const formRef = ref(null);
+
+const cityStore = useCityStore();
+const localCities = ref([]);
+const cityLoading = ref(false);
 
 const form = reactive({
   name: "",
@@ -120,36 +119,74 @@ const form = reactive({
   imageFiles: [],
 });
 
+watch(
+  () => props.modelValue,
+  async (val) => {
+    model.value = val;
+    if (val) {
+      await loadCities();
+      resetForm();
+    }
+  }
+);
+
 const required = (v) => !!v || "必填";
 const number = (v) => (typeof v === "number" && !isNaN(v)) || "必須是數字";
-const ratingRule = (v) => (v >= 0 && v <= 5) || "0 ~ 5 之間";
+const ratingRule = (v) => (v >= 0 && v <= 5) || "評分必須在 0 ~ 5";
 
-const previewImages = () => {
+async function loadCities() {
+  try {
+    cityLoading.value = true;
+    await cityStore.fetchCities();
+    localCities.value = cityStore.cities;
+  } catch (err) {
+    console.error("載入城市失敗", err);
+  } finally {
+    cityLoading.value = false;
+  }
+}
+
+function previewImages() {
   const files = Array.isArray(form.imageFiles) ? form.imageFiles : [];
   photos.value = files.map((f) => ({
     url: URL.createObjectURL(f),
     name: f.name,
   }));
-};
+}
 
-const close = () => {
+function resetForm() {
+  form.name = "";
+  form.cityName = "";
+  form.address = "";
+  form.description = "";
+  form.rating = 0;
+  form.category = [];
+  form.latitude = null;
+  form.longitude = null;
+  form.imageFiles = [];
+  photos.value = [];
+  valid.value = false;
+}
+
+function close() {
   model.value = false;
-};
+}
 
-const submit = async () => {
+async function submit() {
   const isValid = await formRef.value?.validate();
   if (!isValid) return;
 
   loading.value = true;
   try {
-    const selectedCity = props.cities.find(
+    const selectedCity = localCities.value.find(
       (city) => city.name === form.cityName
     );
+    if (!selectedCity) throw new Error("未找到對應城市");
 
     const res = await axios.post("http://localhost:8080/attractions", {
       name: form.name,
       address: form.address,
-      cityId: selectedCity?.id,
+      cityId: selectedCity.id,
       description: form.description,
       rating: form.rating,
       category: form.category,
@@ -168,10 +205,9 @@ const submit = async () => {
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
-        const uploadedUrl = uploadRes.data.url;
         await axios.post("http://localhost:8080/photos", {
           attractionId,
-          url: uploadedUrl,
+          url: uploadRes.data.url,
           caption: form.name,
         });
       }
@@ -184,5 +220,5 @@ const submit = async () => {
   } finally {
     loading.value = false;
   }
-};
+}
 </script>

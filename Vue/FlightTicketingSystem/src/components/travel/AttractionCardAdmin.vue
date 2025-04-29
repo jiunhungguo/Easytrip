@@ -1,10 +1,9 @@
 <template>
   <v-card
-    class="mx-auto hover:shadow-xl hover:scale-[1.02]"
+    class="mx-auto transition-all duration-300 hover:shadow-xl hover:scale-[1.02]"
     max-width="320"
     elevation="3"
     rounded="xl">
-    <!-- 圖片 -->
     <v-carousel
       v-if="photos.length > 0"
       height="180"
@@ -18,7 +17,6 @@
       </v-carousel-item>
     </v-carousel>
 
-    <!-- 名稱 / 地址 / 評分 / 分類 -->
     <v-card-title class="text-center text-lg font-semibold py-2">
       {{ attraction.name }}
     </v-card-title>
@@ -38,85 +36,49 @@
       </div>
     </v-card-text>
 
-    <!-- 按鈕（原本 actions 放回來） -->
-    <v-card-actions class="justify-center">
-      <v-btn color="primary" variant="outlined" @click="editDialog = true">
+    <v-card-actions class="justify-center pb-4">
+      <v-btn
+        color="primary"
+        variant="outlined"
+        size="small"
+        @click="handleEdit(attraction)">
         修改
       </v-btn>
       <v-btn
         color="error"
         variant="outlined"
+        size="small"
         class="ml-2"
-        @click="deleteDialog = true">
+        @click="handleDelete(attraction)">
         刪除
       </v-btn>
     </v-card-actions>
-
-    <EditAttractionModal
-      v-model="editDialog"
-      :attraction="attraction"
-      :cities="cities"
-      @updated="$emit('edit')" />
   </v-card>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from "vue";
-import axios from "axios";
-import EditAttractionModal from "./EditAttractionModal.vue";
+import { ref, onMounted } from "vue";
 
-const props = defineProps({ attraction: Object, cities: Array });
-const emit = defineEmits(["delete", "edit"]);
-
-const photos = ref([]);
-const deleteDialog = ref(false);
-const editDialog = ref(false);
-const valid = ref(true);
-const loading = ref(false);
-const formRef = ref();
-
-const form = reactive({
-  name: props.attraction.name,
-  cityName: props.attraction.city,
-  address: props.attraction.address,
-  description: props.attraction.description,
-  rating: props.attraction.rating,
-  category: Array.isArray(props.attraction.category)
-    ? [...props.attraction.category]
-    : [],
-  latitude: props.attraction.latitude,
-  longitude: props.attraction.longitude,
-  imageFile: null,
+const { attraction, handleEdit, handleDelete } = defineProps({
+  attraction: Object,
+  handleEdit: Function,
+  handleDelete: Function,
 });
 
-const categoryInput = ref(form.category.join(", "));
-
-const r = (v) => !!v || "必填";
-const ratingRule = (v) => (v >= 0 && v <= 5) || "評分必須在 0 到 5 之間";
-
-const confirmDelete = async () => {
-  try {
-    await axios.delete(
-      `http://localhost:8080/attractions/${props.attraction.id}`
-    );
-    emit("delete");
-    deleteDialog.value = false;
-  } catch (err) {
-    console.error("刪除失敗", err);
-  }
-};
+const photos = ref([]);
 
 onMounted(async () => {
   try {
-    const res = await axios.get(
-      `http://localhost:8080/photos/attraction/${props.attraction.id}`
+    const res = await fetch(
+      `http://localhost:8080/photos/attraction/${attraction.id}`
     );
-    photos.value = res.data.map((p) => ({
+    const data = await res.json();
+    photos.value = data.map((p) => ({
       ...p,
       url: p.url.startsWith("http") ? p.url : `http://localhost:8080${p.url}`,
     }));
   } catch (err) {
-    console.error("圖片載入失敗", err);
+    console.error("載入圖片失敗", err);
   }
 });
 </script>

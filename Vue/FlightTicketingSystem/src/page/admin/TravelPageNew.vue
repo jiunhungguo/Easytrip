@@ -52,7 +52,9 @@
       {{ snackbarMessage }}
     </v-snackbar>
   </v-container>
+
   <CreateCityModal v-model="modals.createCity" />
+
   <CreateAttractionModal
     v-model="modals.createAttraction"
     v-bind="modalProps" />
@@ -61,11 +63,13 @@
     v-model="modals.editCity"
     :city="selectedCity"
     @updated="handleCityUpdated" />
+
   <EditAttractionModal
     v-model="modals.editAttraction"
+    :cities="cities"
     :attraction="selectedAttraction"
-    v-bind="modalProps"
-    v-show="!!selectedAttraction" />
+    v-show="!!selectedAttraction"
+    @updated="handleAttractionUpdated" />
 
   <DeleteConfirmDialog
     v-model="deleteDialogVisible"
@@ -173,9 +177,21 @@ function handleCityUpdated() {
   }
 }
 
-function handleAttractionUpdated(item) {
+function handleAttractionUpdated() {
   showSnackbar("景點已更新");
+
+  if (["cities", "attractions"].includes(currentTab.value)) {
+    searchQuery.value = "";
+    results.value = [];
+  } else {
+    if (["allCities"].includes(currentTab.value)) {
+      cityStore.fetchCities();
+    } else if (["allAttractions"].includes(currentTab.value)) {
+      attractionStore.fetchAttractions();
+    }
+  }
 }
+
 function handleAttractionDeleted(item) {
   showSnackbar("景點已刪除");
 }
@@ -270,9 +286,19 @@ function handleDelete(item) {
 async function confirmDelete() {
   if (!selectedItem.value) return;
   try {
-    await axios.delete(`http://localhost:8080/cities/${selectedItem.value.id}`);
-    showSnackbar("城市已刪除");
-    cityStore.fetchCities();
+    if (["cities", "allCities"].includes(currentTab.value)) {
+      await axios.delete(
+        `http://localhost:8080/cities/${selectedItem.value.id}`
+      );
+      showSnackbar("城市已刪除");
+      cityStore.fetchCities();
+    } else if (["attractions", "allAttractions"].includes(currentTab.value)) {
+      await axios.delete(
+        `http://localhost:8080/attractions/${selectedItem.value.id}`
+      );
+      showSnackbar("景點已刪除");
+      attractionStore.fetchAttractions();
+    }
   } catch (err) {
     console.error("刪除失敗", err);
     showSnackbar("刪除失敗");
