@@ -4,15 +4,15 @@ import CityCardGrid from "@/components/travel/CityCardGridAdmin.vue";
 import AttractionTable from "@/components/travel/AttractionTable.vue";
 import AttractionCardGrid from "@/components/travel/AttractionCardGridAdmin.vue";
 
-export function useTabView(
+export function useTabView({
   viewMode,
-  results,
-  cities,
-  handleEdit,
-  handleDelete,
-  cityHeaders,
-  attractionHeaders
-) {
+  currentTab,
+  cityStore,
+  attractionStore,
+  searchResults,
+  handlers,
+  headers,
+}) {
   const getViewComponent = (tab) => {
     const isCard = viewMode.value === "Card";
     const map = {
@@ -25,25 +25,40 @@ export function useTabView(
   };
 
   const getViewProps = (tab) => {
-    if (["cities", "allCities"].includes(tab)) {
+    if (["cities"].includes(tab)) {
       return {
-        cities: results.value,
-        headers: cityHeaders,
-        onEdit: handleEdit,
-        onDelete: handleDelete,
+        cities: searchResults.value,
+        headers: headers.city,
+        onEdit: handlers.edit,
+        onDelete: handlers.delete,
       };
     }
-
-    if (["attractions", "allAttractions"].includes(tab)) {
+    if (["allCities"].includes(tab)) {
       return {
-        attractions: results.value,
-        cities: cities.value,
-        headers: attractionHeaders,
-        onEdit: handleEdit,
-        onDelete: handleDelete,
+        cities: cityStore.cities,
+        headers: headers.city,
+        handleEdit: handlers.edit,
+        handleDelete: handlers.delete,
       };
     }
-
+    if (["attractions"].includes(tab)) {
+      return {
+        attractions: searchResults.value,
+        cities: cityStore.cities,
+        headers: headers.attraction,
+        handleEdit: handlers.edit,
+        handleDelete: handlers.delete,
+      };
+    }
+    if (["allAttractions"].includes(tab)) {
+      return {
+        attractions: attractionStore.attractions,
+        cities: cityStore.cities,
+        headers: headers.attraction,
+        onEdit: handlers.edit,
+        onDelete: handlers.delete,
+      };
+    }
     return {};
   };
 

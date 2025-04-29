@@ -35,6 +35,7 @@
             @change="previewImage" />
         </v-form>
       </v-card-text>
+
       <v-card-actions class="justify-end">
         <v-btn
           :disabled="!valid || loading"
@@ -74,8 +75,8 @@ watch(model, (val) => emit("update:modelValue", val));
 
 const valid = ref(false);
 const loading = ref(false);
-const formRef = ref(null);
 const previewUrl = ref("");
+const formRef = ref(null);
 
 const form = reactive({
   name: "",
@@ -95,8 +96,19 @@ const previewImage = () => {
   }
 };
 
+const resetForm = () => {
+  form.name = "";
+  form.country = "";
+  form.latitude = null;
+  form.longitude = null;
+  form.imageFile = null;
+  previewUrl.value = "";
+  formRef.value?.resetValidation();
+};
+
 const close = () => {
   model.value = false;
+  resetForm();
 };
 
 const submit = async () => {
@@ -105,32 +117,26 @@ const submit = async () => {
 
   loading.value = true;
   try {
-    const cityRes = await axios.post("http://localhost:8080/cities", {
-      name: form.name,
-      country: form.country,
-      latitude: form.latitude,
-      longitude: form.longitude,
-    });
-
-    const cityId = cityRes.data.id;
+    let imageUrl = null;
 
     if (form.imageFile) {
       const formData = new FormData();
       formData.append("image", form.imageFile);
       const uploadRes = await axios.post(
-        "http://localhost:8080/photos/upload",
+        "http://localhost:8080/cities/upload",
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
-
-      const uploadedUrl = uploadRes.data.url;
-
-      await axios.post("http://localhost:8080/photos", {
-        cityId,
-        url: uploadedUrl,
-        caption: form.name,
-      });
+      imageUrl = uploadRes.data.url;
     }
+
+    await axios.post("http://localhost:8080/cities", {
+      name: form.name,
+      country: form.country,
+      latitude: form.latitude,
+      longitude: form.longitude,
+      ...(imageUrl && { image: imageUrl }),
+    });
 
     emit("created");
     close();

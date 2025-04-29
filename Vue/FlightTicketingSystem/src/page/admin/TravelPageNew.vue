@@ -60,12 +60,19 @@
   <EditCityModal
     v-model="modals.editCity"
     :city="selectedCity"
-    v-show="!!selectedCity" />
+    @updated="handleCityUpdated" />
   <EditAttractionModal
     v-model="modals.editAttraction"
     :attraction="selectedAttraction"
     v-bind="modalProps"
     v-show="!!selectedAttraction" />
+
+  <DeleteConfirmDialog
+    v-model="deleteDialogVisible"
+    :title="`刪除「${selectedItem?.name}」？`"
+    message="刪除後無法復原，確定嗎？"
+    @confirm="confirmDelete"
+    @cancel="deleteDialogVisible = false" />
 </template>
 
 <script setup>
@@ -73,14 +80,11 @@ import { ref, watch, reactive, computed, onMounted } from "vue";
 import axios from "axios";
 import NavigationTabs from "@/components/travel/NavigationTabs.vue";
 import SearchBar from "@/components/travel/SearchBarAdmin.vue";
-import CityCardGrid from "@/components/travel/CityCardGridAdmin.vue";
-import CityTable from "@/components/travel/CityTable.vue";
-import AttractionCardGrid from "@/components/travel/AttractionCardGridAdmin.vue";
-import AttractionTable from "@/components/travel/AttractionTable.vue";
 import CreateCityModal from "@/components/travel/CreateCityModal.vue";
 import EditCityModal from "@/components/travel/EditCityModal.vue";
 import CreateAttractionModal from "@/components/travel/CreateAttractionModal.vue";
 import EditAttractionModal from "@/components/travel/EditAttractionModal.vue";
+import DeleteConfirmDialog from "@/components/travel/DeleteConfirmDialog.vue";
 import { useTabView } from "@/composables/useTabView.js";
 import { useCityStore } from "@/stores/cityStore";
 import { useAttractionStore } from "@/stores/attractionStore";
@@ -88,13 +92,13 @@ import { useAttractionStore } from "@/stores/attractionStore";
 const cityStore = useCityStore();
 const attractionStore = useAttractionStore();
 const cities = computed(() => cityStore.cities);
-onMounted(() => {
-  cityStore.fetchCities();
-});
-
 const searchBarTabs = ["cities", "attractions"];
 const currentTab = ref("cities");
 const searchQuery = ref("");
+
+onMounted(() => {
+  cityStore.fetchCities();
+});
 
 watch(currentTab, async (tab) => {
   searchQuery.value = "";
@@ -102,10 +106,8 @@ watch(currentTab, async (tab) => {
 
   if (tab === "allCities") {
     await cityStore.fetchCities();
-    results.value = cityStore.cities;
   } else if (tab === "allAttractions") {
     await attractionStore.fetchAttractions();
-    results.value = attractionStore.attractions;
   } else if (tab === "addCities") {
     modals.createCity = true;
   } else if (tab === "addAttractions") {
@@ -156,12 +158,21 @@ function showSnackbar(msg) {
   snackbarMessage.value = msg;
   snackbar.value = true;
 }
-function handleCityUpdated(item) {
+function handleCityUpdated() {
   showSnackbar("城市已更新");
+
+  if (["cities", "attractions"].includes(currentTab.value)) {
+    searchQuery.value = "";
+    results.value = [];
+  } else {
+    if (["allCities"].includes(currentTab.value)) {
+      cityStore.fetchCities();
+    } else if (["allAttractions"].includes(currentTab.value)) {
+      attractionStore.fetchAttractions();
+    }
+  }
 }
-function handleCityDeleted(item) {
-  showSnackbar("城市已刪除");
-}
+
 function handleAttractionUpdated(item) {
   showSnackbar("景點已更新");
 }
@@ -179,40 +190,21 @@ const handleEdit = (item) => {
   }
 };
 
-const handleDelete = async (item) => {
-  try {
-    const isCity = ["cities", "allCities"].includes(currentTab.value);
-    const confirmMsg = isCity
-      ? `你確定要刪除城市「${item.name}」嗎？`
-      : `你確定要刪除景點「${item.name}」嗎？`;
-
-    const confirmed = window.confirm(confirmMsg);
-    if (!confirmed) return;
-
-    if (isCity) {
-      await axios.delete(`http://localhost:8080/cities/${item.id}`);
-      showSnackbar("城市已刪除");
-      cityStore.fetchCities(); // 更新列表
-    } else {
-      await axios.delete(`http://localhost:8080/attractions/${item.id}`);
-      showSnackbar("景點已刪除");
-      attractionStore.fetchAttractions(); // 更新列表
-    }
-  } catch (err) {
-    console.error("刪除失敗", err);
-    showSnackbar("刪除失敗，請稍後再試");
-  }
-};
-
-const { getViewComponent, getViewProps } = useTabView(
+const { getViewComponent, getViewProps } = useTabView({
   viewMode,
-  results,
-  cities,
-  handleEdit,
-  handleDelete,
-  cityHeaders,
-  attractionHeaders
-);
+  currentTab,
+  cityStore,
+  attractionStore,
+  searchResults: results,
+  handlers: {
+    edit: handleEdit,
+    delete: handleDelete,
+  },
+  headers: {
+    city: cityHeaders,
+    attraction: attractionHeaders,
+  },
+});
 
 const apiPaths = {
   cities: "http://localhost:8080/cities/city",
@@ -223,7 +215,9 @@ const handleSearch = async (done) => {
   try {
     const base = apiPaths[currentTab.value];
     const query = searchQuery.value?.trim();
+
     if (!query) {
+      results.value = []; // ← 搜索关键字为空也清空结果
       done();
       return;
     }
@@ -231,33 +225,62 @@ const handleSearch = async (done) => {
     const url = `${base}/${encodeURIComponent(query)}`;
     const response = await axios.get(url);
 
-    if (currentTab.value === "attractions") {
-      const attractions = await Promise.all(
-        response.data.map(async (attr) => {
-          try {
-            const photoRes = await axios.get(
-              `http://localhost:8080/photos/attraction/${attr.id}`
-            );
-            const relativeUrl = photoRes.data[0]?.url || "";
-            attr.photoUrl = relativeUrl
-              ? `http://localhost:8080${relativeUrl}`
-              : "";
-          } catch {
-            attr.photoUrl = "";
-          }
-          return attr;
-        })
-      );
-      results.value = attractions;
+    if (response.data && response.data.length > 0) {
+      if (currentTab.value === "attractions") {
+        const attractions = await Promise.all(
+          response.data.map(async (attr) => {
+            try {
+              const photoRes = await axios.get(
+                `http://localhost:8080/photos/attraction/${attr.id}`
+              );
+              const relativeUrl = photoRes.data[0]?.url || "";
+              attr.photoUrl = relativeUrl
+                ? `http://localhost:8080${relativeUrl}`
+                : "";
+            } catch {
+              attr.photoUrl = "";
+            }
+            return attr;
+          })
+        );
+        results.value = attractions;
+      } else {
+        results.value = response.data;
+      }
     } else {
-      results.value = response.data;
+      // 🧹 如果后端返回空数组，主动清空 results
+      results.value = [];
     }
   } catch (error) {
     console.error("Error fetching data:", error);
+    results.value = []; // 🧹 错误时也清空，不要残留旧数据
   } finally {
     done();
   }
 };
+
+const deleteDialogVisible = ref(false);
+const selectedItem = ref(null);
+
+function handleDelete(item) {
+  selectedItem.value = item;
+  deleteDialogVisible.value = true;
+}
+
+async function confirmDelete() {
+  if (!selectedItem.value) return;
+  try {
+    await axios.delete(`http://localhost:8080/cities/${selectedItem.value.id}`);
+    showSnackbar("城市已刪除");
+    cityStore.fetchCities();
+  } catch (err) {
+    console.error("刪除失敗", err);
+    showSnackbar("刪除失敗");
+  } finally {
+    deleteDialogVisible.value = false;
+    selectedItem.value = null;
+  }
+}
 </script>
 
 <style scoped></style>

@@ -4,7 +4,6 @@
       <v-card-title class="text-h6 font-weight-bold">編輯城市</v-card-title>
       <v-card-text>
         <v-form ref="formRef" v-model="valid" lazy-validation>
-          <!-- 預覽 -->
           <v-img
             v-if="previewUrl"
             :src="previewUrl"
@@ -27,7 +26,6 @@
             type="number"
             :rules="[required, number]" />
 
-          <!-- 圖片上傳 -->
           <v-file-input
             label="城市圖片"
             accept="image/*"
@@ -124,30 +122,26 @@ const submit = async () => {
 
   loading.value = true;
   try {
-    // 更新城市資料
+    let imageUrl = props.city.image ?? null;
+
+    if (form.imageFile) {
+      const formData = new FormData();
+      formData.append("image", form.imageFile);
+      const uploadRes = await axios.post(
+        "http://localhost:8080/cities/upload",
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+      imageUrl = uploadRes.data.url;
+    }
+
     await axios.put(`http://localhost:8080/cities/${props.city.id}`, {
       name: form.name,
       country: form.country,
       latitude: form.latitude,
       longitude: form.longitude,
+      image: imageUrl,
     });
-
-    // 圖片上傳
-    if (form.imageFile) {
-      const formData = new FormData();
-      formData.append("image", form.imageFile);
-      const uploadRes = await axios.post(
-        "http://localhost:8080/photos/upload",
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
-      const uploadedUrl = uploadRes.data.url;
-
-      await axios.post("http://localhost:8080/photos", {
-        cityId: props.city.id,
-        url: uploadedUrl,
-      });
-    }
 
     emit("updated");
     close();
