@@ -9,10 +9,9 @@
         :class="[
           baseBtnClass,
           activeMode === mode.value
-            ? 'bg-[#e8f0fe] text-[#1967d2] border-[#d2e3fc]'
-            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100 active:bg-gray-200',
-        ]"
-      >
+            ? 'bg-blue-100 text-blue-800 border-blue-300'
+            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:text-blue-800 hover:border-blue-300 hover:scale-[1.02] active:bg-gray-200',
+        ]">
         {{ mode.label }}
       </button>
     </div>
@@ -26,8 +25,7 @@
     <div
       v-if="favouriteCities.length > 0"
       class="mx-auto"
-      style="padding-left: 7em"
-    >
+      style="padding-left: 7em">
       <CityCardGrid :cities="favouriteCities" />
     </div>
     <div v-else class="text-center text-gray-500 mt-10">
@@ -42,14 +40,12 @@
       v-model="userPrompt"
       rows="4"
       placeholder="請輸入您的需求"
-      class="w-full p-3 border border-gray-300 rounded mb-4 resize-none"
-    ></textarea>
+      class="w-full p-3 border border-gray-300 rounded mb-4 resize-none"></textarea>
 
     <button
       @click="getRecommendation"
       :disabled="loading || !userPrompt"
-      class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded disabled:opacity-50 transition"
-    >
+      class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded disabled:opacity-50 transition">
       {{ loading ? "正在思考中..." : "智能推薦" }}
     </button>
 
@@ -58,8 +54,7 @@
       <div
         v-for="(item, index) in recommendation"
         :key="index"
-        class="p-4 border border-gray-200 rounded shadow-sm"
-      >
+        class="p-4 border border-gray-200 rounded shadow-sm">
         <p class="font-bold">{{ item.name }}</p>
         <p class="text-sm text-gray-600">{{ item.attractions }}</p>
         <div class="flex justify-end mt-4">
@@ -67,8 +62,7 @@
             size="small"
             color="blue"
             variant="outlined"
-            @click="bookCity(item.name)"
-          >
+            @click="bookCity(item.name)">
             <i class="mdi mdi-airplane mr-2"></i> 設為目的地
           </v-btn>
         </div>
@@ -90,7 +84,7 @@ import axios from "axios";
 import FullCalendar from "@/components/travel/BasicCalendar.vue";
 
 const baseBtnClass =
-  "px-4 py-2 min-w-[96px] rounded-lg border font-medium text-sm transition duration-150 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
+  "px-4 py-2 min-w-[96px] rounded-lg border font-medium text-sm transition duration-150 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transform cursor-pointer";
 
 const modes = [
   { value: "AI", label: "智能推薦" },
